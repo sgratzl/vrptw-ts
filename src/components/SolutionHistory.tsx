@@ -4,14 +4,23 @@ import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import {ISolution} from '../model/interfaces';
 import classNames from 'classnames';
+import {scaleLinear} from 'd3';
+import Axis from './Axis';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
+    display: 'flex',
+  },
+  main: {
+    flex: '1 1 0',
     display: 'flex',
     position: 'relative',
     alignItems: 'flex-end',
     padding: '0 1rem',
     borderBottom: '2px solid black',
+  },
+  axis: {
+    width: '5em',
   },
   bar: {
     marginRight: '1rem',
@@ -28,6 +37,7 @@ const styles = (_theme: Theme) => createStyles({
       top: '100%',
       fontSize: 'x-small',
       textAlign: 'center',
+      paddingTop: '0.5em',
       left: '-3em',
       right: '-3em'
     },
@@ -80,15 +90,18 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
     const classes = this.props.classes;
     const store = this.props.store!;
 
-
-    const toPercent = (distance: number) => Math.round(100 * 100 * distance / store.maxDistance) / 100;
+    const scale = scaleLinear().domain([0, store.maxDistance]).rangeRound([0, 100]);
 
     return <div className={classes.root}>
-      {store.solutions.map((s) => <div
-        key={s.id} className={classNames(classes.bar, {[classes.selected] : store.hoveredSolution === s})} title={s.name} data-distance={`${Math.round(s.distance / 100) / 10 } km`} style={{height: `${toPercent(s.distance)}%`}}
-        onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
-        onClick={() => this.onBarClick(s)}
-      />)}
+      <Axis scale={scale} className={classes.axis}/>
+      <div className={classes.main}>
+        {store.solutions.map((s) => <div
+          key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
+          title={s.name} data-distance={`${Math.round(s.distance / 100) / 10} km`} style={{height: `${scale(s.distance)}%`}}
+          onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
+          onClick={() => this.onBarClick(s)}
+        />)}
+      </div>
     </div>;
   }
 }

@@ -67,13 +67,14 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
     }
 
     if (truck.usedCapacity > truck.truck.capacity) {
-      violations.push(`Truck ${truck.truck.name} used a capacity from ${truck.usedCapacity}/${truck.truck.capacity}`);
+      violations.push(`Truck ${truck.truck.name} used a capacity of ${truck.usedCapacity}/${truck.truck.capacity}`);
     }
 
     const route = truck.route;
     // sort by arrivalTime
     route.sort((a, b) => a.arrivalTime - b.arrivalTime);
-    console.assert(route[0].customer === depot, 'end at depot');
+
+    console.assert(route[0].customer === depot, 'being at depot');
     console.assert(route[truck.route.length - 1].customer === depot, 'end at depot');
 
     const start = route[0];
