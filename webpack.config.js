@@ -25,7 +25,7 @@ module.exports = (_env, options) => {
       global: true
     }, // no polyfills
     entry: {
-      app: './src/start.ts',
+      app: './src/index.tsx',
     },
     output: {
       globalObject: 'self',
@@ -63,7 +63,7 @@ module.exports = (_env, options) => {
       new HtmlWebpackPlugin({
         chunks: ['app'],
         template: resolve(__dirname, 'src/index.html'),
-        title: 'MiniZinc IDE',
+        title: 'VRPTW',
         inject: 'body',
       })
     ].concat(
