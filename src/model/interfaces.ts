@@ -47,6 +47,7 @@ export interface ITruckRoute {
   usedCapacity: number;
   totalDistance: number;
   startTime: number;
+  finishTime: number;
 
   route: IServedCustomer[];
 }
@@ -55,6 +56,7 @@ export interface ISolution {
   id: number;
   name: string;
   distance: number;
+  finishTime: number;
 
   violations: string[];
 

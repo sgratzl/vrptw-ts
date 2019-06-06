@@ -89,4 +89,9 @@ export class ApplicationStore {
   get maxDistance() {
     return this.solutions.reduce((acc, s) => Math.max(acc, s.distance), 0);
   }
+
+  @computed
+  get maxFinishTime() {
+    return this.solutions.reduce((acc, s) => Math.max(acc, s.finishTime), 0);
+  }
 }
