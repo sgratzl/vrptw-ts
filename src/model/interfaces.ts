@@ -1,72 +1,73 @@
 export interface ILatLng {
-    lat: number;
-    lng: number;
+  lat: number;
+  lng: number;
 }
 
 export interface ICustomer extends ILatLng {
-    id: number;
-    name: string;
+  id: number;
+  name: string;
 
-    demand: number;
+  demand: number;
 
-    startTime: number;
-    endTime: number;
-    serviceTime: number;
+  startTime: number;
+  endTime: number;
+  serviceTime: number;
 }
 
 export interface IDepot extends ICustomer {
-    isDepot: true;
+  isDepot: true;
 }
 
 export interface ITruck {
-    id: number;
-    color: string;
-    name: string;
+  id: number;
+  color: string;
+  name: string;
 
-    capacity: number;
+  capacity: number;
 }
 
 export interface IServedCustomer {
-    // customer to drive to or null to drive to depot
-    customer: ICustomer | IDepot;
-    arrivalTime: number;
-    startOfService: number;
-    endOfService: number;
-    departureTime: number;
-    // distance to this customer
-    distanceTo: number;
+  // customer to drive to or null to drive to depot
+  customer: ICustomer | IDepot;
+  arrivalTime: number;
+  startOfService: number;
+  endOfService: number;
+  departureTime: number;
+  // distance to this customer
+  distanceTo: number;
 
-    // way points to drive to this customer
-    wayPointsTo: ILatLng[];
+  // way points to drive to this customer
+  wayPointsTo: ILatLng[];
 }
 
 export interface ITruckRoute {
-    truck: ITruck;
+  truck: ITruck;
 
-    usedCapacity: number;
-    totalDistance: number;
-    startTime: number;
+  usedCapacity: number;
+  totalDistance: number;
+  startTime: number;
 
-    route: IServedCustomer[];
+  route: IServedCustomer[];
 }
 
 export interface ISolution {
-    id: number;
-    distance: number;
+  id: number;
+  name: string;
+  distance: number;
 
-    violations: string[];
+  violations: string[];
 
-    trucks: ITruckRoute[];
+  trucks: ITruckRoute[];
 }
 
 export interface IProblem {
-    trucks: ITruck[];
-    customers: ICustomer[];
-    depot: IDepot;
-    distances: number[][];
-    travelTimes: number[][];
+  trucks: ITruck[];
+  customers: ICustomer[];
+  depot: IDepot;
+  distances: number[][];
+  travelTimes: number[][];
 
-    orderConstraints: {from: ICustomer, to: ICustomer}[];
+  orderConstraints: {from: ICustomer, to: ICustomer}[];
 }
 
 export interface IServerSolution {

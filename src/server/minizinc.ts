@@ -1,24 +1,3 @@
-import model from 'raw-loader!../model/model.mzn';
-import RESTMiniZinc from 'minizinc/build/RESTMiniZinc';
-import {IOrderConstraint, IServerSolution} from '../model/interfaces';
-import {IDataObject} from 'minizinc';
-
-const server = '/v1.0';
-
-const client = new RESTMiniZinc(server);
-
-export function buildOrderConstraint(customerIndexArray: IOrderConstraint[]) {
-    return `
-constraint forall (i, j in Customers) (
-    if (${customerIndexArray.map(({from, to}) => `(i == ${from.id} /\\ j == ${to.id})`).join(` \\/ `)})
-    then
-        startOfService[i]+serviceTime[i] <= arrivalTime[j] /\\
-        vehicleOf[i] == vehicleOf[j]
-    else
-        startOfService[i]+serviceTime[i] >= 0
-    endif
-)`;
-}
 
 // export function constraintsViolationCheckArrival(problem, previousCustomer, currentCustomer) {
 //     const numLocations = problem.locationX.length;
@@ -42,13 +21,3 @@ constraint forall (i, j in Customers) (
 
 //     return violated;
 //   }
-
-export function solve(params: IDataObject, extraContraints: string[] = []): Promise<IServerSolution[]> {
-  const fullModel = model + extraContraints.join('\n');
-
-  return client.solve(fullModel, params).then((result) => {
-    return result.solutions.map((s) => (<IServerSolution><unknown>s.assignments);
-  }).catch((error) => {
-    
-  });
-}

@@ -2,105 +2,106 @@ import computeRoute from '../server/route';
 import {IProblem, IServedCustomer, IServerSolution, ITruckRoute, ILatLng, ISolution} from './interfaces';
 
 export default function parseSolution(problem: IProblem, solution: IServerSolution, i: number): Promise<ISolution> {
-    const depot = problem.depot;
+  const depot = problem.depot;
 
-    const violations: string[] = [];
-    const servedCustomers: IServedCustomer[] = [];
+  const violations: string[] = [];
+  const servedCustomers: IServedCustomer[] = [];
 
-    const trucks: ITruckRoute[] = problem.trucks.map((truck) => ({
-        truck,
-        usedCapacity: 0,
-        totalDistance: 0,
-        startTime: 0,
-        route: []
-    }));
-    // since starting with 1
-    const truckById = (id: number) => trucks[id - 1];
-    const customerById = (id: number) => problem.customers[id - 1] || depot;
+  const trucks: ITruckRoute[] = problem.trucks.map((truck) => ({
+    truck,
+    usedCapacity: 0,
+    totalDistance: 0,
+    startTime: 0,
+    route: []
+  }));
+  // since starting with 1
+  const truckById = (id: number) => trucks[id - 1];
+  const customerById = (id: number) => problem.customers[id - 1] || depot;
 
-    // assign all points to a truck
-    solution.successor.forEach((customerId, i) => {
-        const truck = truckById(solution.vehicleOf[i]);
-        const customer = customerById(customerId);
-        const arrivalTime = solution.arrivalTime[i];
-        const startOfService = solution.startOfService[i];
+  // assign all points to a truck
+  solution.successor.forEach((customerId, i) => {
+    const truck = truckById(solution.vehicleOf[i]);
+    const customer = customerById(customerId);
+    const arrivalTime = solution.arrivalTime[i];
+    const startOfService = solution.startOfService[i];
 
-        truck.usedCapacity += customer.demand;
+    truck.usedCapacity += customer.demand;
 
-        if (customer !== depot) {
-            if (startOfService < customer.startTime) {
-                violations.push(`Customer ${customer.name} served before his/her start time`);
-            }
-            if ((startOfService + customer.serviceTime) > customer.endTime) {
-                violations.push(`Customer ${customer.name} served after or longer than his/her end time`);
-            }
-        }
-        const servedCustomer = {
-            customer,
-            arrivalTime,
-            startOfService,
-            endOfService: startOfService + customer.serviceTime,
-            departureTime: NaN, // computed after
-            distanceTo: NaN, // computed later
-            wayPointsTo: [] // computed later
-        };
-        servedCustomers.push(servedCustomer);
-        truck.route.push(servedCustomer);
-    });
+    if (customer !== depot) {
+      if (startOfService < customer.startTime) {
+        violations.push(`Customer ${customer.name} served before his/her start time`);
+      }
+      if ((startOfService + customer.serviceTime) > customer.endTime) {
+        violations.push(`Customer ${customer.name} served after or longer than his/her end time`);
+      }
+    }
+    const servedCustomer = {
+      customer,
+      arrivalTime,
+      startOfService,
+      endOfService: startOfService + customer.serviceTime,
+      departureTime: NaN, // computed after
+      distanceTo: NaN, // computed later
+      wayPointsTo: [] // computed later
+    };
+    servedCustomers.push(servedCustomer);
+    truck.route.push(servedCustomer);
+  });
 
-    function computeWayPoints(from: ILatLng, to: ILatLng) {
-        // TODO real route async
-        // straight line
-        return [
-            {lat: from.lat, lng: from.lng},
-            {lat: to.lat, lng: to.lng}
-        ];
+  function computeWayPoints(from: ILatLng, to: ILatLng) {
+    // TODO real route async
+    // straight line
+    return [
+      {lat: from.lat, lng: from.lng},
+      {lat: to.lat, lng: to.lng}
+    ];
+  }
+
+  for (const truck of trucks) {
+    if (truck.route.length === 0) {
+      truck.startTime = NaN;
     }
 
-    for (const truck of trucks) {
-        if (truck.route.length === 0) {
-            truck.startTime = NaN;
-        }
-
-        if (truck.usedCapacity > truck.truck.capacity) {
-            violations.push(`Truck ${truck.truck.name} used a capacity from ${truck.usedCapacity}/${truck.truck.capacity}`);
-        }
-
-        const route = truck.route;
-        // sort by arrivalTime
-        route.sort((a, b) => a.arrivalTime - b.arrivalTime);
-        console.assert(route[0].customer === depot, 'end at depot');
-        console.assert(route[truck.route.length - 1].customer === depot, 'end at depot');
-
-        const start = route[0];
-        truck.startTime = start.arrivalTime;
-        start.distanceTo = 0;
-
-        // compute distances between route
-        for (let i = 1; i < route.length; i++) {
-            const to = route[i];
-            const from = route[i - 1];
-            const distance = problem.distances[from.customer.id][to.customer.id];
-            const travelTime = problem.travelTimes[from.customer.id][to.customer.id];
-            to.distanceTo = distance;
-            from.departureTime = to.arrivalTime - travelTime;
-            to.wayPointsTo = computeWayPoints(from.customer, to.customer);
-            truck.totalDistance += distance;
-        }
+    if (truck.usedCapacity > truck.truck.capacity) {
+      violations.push(`Truck ${truck.truck.name} used a capacity from ${truck.usedCapacity}/${truck.truck.capacity}`);
     }
 
-    return Promise.all(servedCustomers.map(computeRouteWayPoints)).then(() => ({
-        id: i,
-        distance: solution.objective,
-        violations,
-        trucks
-    }));
+    const route = truck.route;
+    // sort by arrivalTime
+    route.sort((a, b) => a.arrivalTime - b.arrivalTime);
+    console.assert(route[0].customer === depot, 'end at depot');
+    console.assert(route[truck.route.length - 1].customer === depot, 'end at depot');
+
+    const start = route[0];
+    truck.startTime = start.arrivalTime;
+    start.distanceTo = 0;
+
+    // compute distances between route
+    for (let i = 1; i < route.length; i++) {
+      const to = route[i];
+      const from = route[i - 1];
+      const distance = problem.distances[from.customer.id][to.customer.id];
+      const travelTime = problem.travelTimes[from.customer.id][to.customer.id];
+      to.distanceTo = distance;
+      from.departureTime = to.arrivalTime - travelTime;
+      to.wayPointsTo = computeWayPoints(from.customer, to.customer);
+      truck.totalDistance += distance;
+    }
+  }
+
+  return Promise.all(servedCustomers.map(computeRouteWayPoints)).then(() => ({
+    id: i,
+    name: `Solution ${i + 1}`,
+    distance: solution.objective,
+    violations,
+    trucks
+  }));
 }
 
 function computeRouteWayPoints(servedCustomer: IServedCustomer) {
-    const line = servedCustomer.wayPointsTo;
-    return computeRoute(line[0].lat, line[0].lng, line[1].lat, line[1].lng).then((wayPoints) => {
-        servedCustomer.wayPointsTo = wayPoints.map((w) => ({lat: w[0], lng: w[1]}));
-        return servedCustomer;
-    });
+  const line = servedCustomer.wayPointsTo;
+  return computeRoute(line[0].lat, line[0].lng, line[1].lat, line[1].lng).then((wayPoints) => {
+    servedCustomer.wayPointsTo = wayPoints.map((w) => ({lat: w[0], lng: w[1]}));
+    return servedCustomer;
+  });
 }
