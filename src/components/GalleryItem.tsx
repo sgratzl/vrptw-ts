@@ -9,7 +9,8 @@ import {scaleLinear} from 'd3-scale';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
-
+    display: 'flex',
+    flexDirection: 'column'
   }
 });
 
@@ -46,7 +47,7 @@ class GalleryItem extends React.Component<IGalleryItemProps> {
 
     return <div className={classes.root}>
       <SolutionRoute solution={solution} width={200} height={200} lat2y={lat2y} lng2x={lng2x}/>
-      <Typography variant="caption">{solution.name}</Typography>
+      <Typography variant="caption" align="center">{solution.name}</Typography>
     </div>;
   }
 }
