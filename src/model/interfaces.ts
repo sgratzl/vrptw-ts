@@ -83,3 +83,7 @@ export interface IOrderConstraint {
   from: ICustomer | IDepot;
   to: ICustomer | IDepot;
 }
+
+export function isDepot(customer: ICustomer | IDepot): customer is IDepot {
+  return (<IDepot>customer).isDepot === true;
+}

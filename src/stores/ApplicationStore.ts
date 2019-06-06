@@ -38,6 +38,10 @@ export class ApplicationStore {
   @observable
   rightSelectedSolution: ISolution | null = null;
 
+
+  @observable
+  solving: boolean = false;
+
   constructor() {
     this.solve();
   }
@@ -46,12 +50,15 @@ export class ApplicationStore {
   solve() {
     const fullModel = model + this.extraConstraints.join('\n');
 
+    this.solving = true;
+
     this.backend.solve({
       model: fullModel,
       all_solutions: true
     }, this.params).then((result) => {
       const solutions = result.solutions.map((s) => (<IServerSolution><unknown>s.assignments));
       Promise.all(solutions.map((s) => parseSolution(this.problem, s, this.solutionCounter++))).then((solutions) => {
+        this.solving = false;
         this.solutions.push(...solutions);
         if (!this.leftSelectedSolution) {
           this.leftSelectedSolution = this.solutions[0];
@@ -60,6 +67,9 @@ export class ApplicationStore {
           this.rightSelectedSolution = this.solutions[1];
         }
       });
+    }).catch((error) => {
+      console.warn('error while computing solutions', error);
+      this.solving = false;
     });
   }
 

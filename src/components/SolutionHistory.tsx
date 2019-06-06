@@ -2,6 +2,7 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
+import {ISolution} from '../model/interfaces';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -18,6 +19,7 @@ const styles = (_theme: Theme) => createStyles({
     height: '0%',
     transition: 'height 0.5 ease',
     background: 'lightgrey',
+    cursor: 'pointer',
 
     '&::before': {
       content: 'attr(title)',
@@ -57,6 +59,19 @@ export interface ISolutionHistoryProps extends WithStyles<typeof styles>, IWithS
 @inject('store')
 @observer
 class SolutionHistory extends React.Component<ISolutionHistoryProps> {
+  private onBarClick(solution: ISolution) {
+    const store = this.props.store!;
+    if (!store.leftSelectedSolution) {
+      store.leftSelectedSolution = solution;
+    } else {
+      store.rightSelectedSolution = solution;
+    }
+    if (!store.gallerySolutions.includes(solution)) {
+      store.gallerySolutions.push(solution);
+    }
+  }
+
+
   render() {
     const classes = this.props.classes;
     const store = this.props.store!;
@@ -65,7 +80,10 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
     const toPercent = (distance: number) => Math.round(100 * 100 * distance / store.maxDistance) / 100;
 
     return <div className={classes.root}>
-      {store.solutions.map((s) => <div key={s.id} className={classes.bar} title={s.name} data-distance={`${s.distance} km`} style={{height: `${toPercent(s.distance)}%`}}/>)}
+      {store.solutions.map((s) => <div
+        key={s.id} className={classes.bar} title={s.name} data-distance={`${s.distance} km`} style={{height: `${toPercent(s.distance)}%`}}
+        onClick={() => this.onBarClick(s)}
+      />)}
     </div>;
   }
 }

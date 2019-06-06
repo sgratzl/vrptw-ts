@@ -21,7 +21,7 @@ export interface ITemplateProps extends WithStyles<typeof styles>, IWithStore {
 class Template extends React.Component<ITemplateProps> {
   render() {
     const classes = this.props.classes;
-    const store = this.props.store!;
+    // const store = this.props.store!;
 
     return <div className={classes.root}>
     </div>;

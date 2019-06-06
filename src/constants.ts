@@ -1,5 +1,4 @@
 export const truckColor = [
-    '#000000',
     '#7fc97f',
     '#51a7f9',
     '#ff69b4'
