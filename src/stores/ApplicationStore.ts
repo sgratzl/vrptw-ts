@@ -1,6 +1,6 @@
 import {observable, action, computed} from 'mobx';
 import RESTMiniZinc from 'minizinc/build/RESTMiniZinc';
-import {IProblem, IOrderConstraint, IServerSolution, ISolution} from '../model/interfaces';
+import {IProblem, IOrderConstraint, IServerSolution, ISolution, ITruck, ICustomer} from '../model/interfaces';
 import problem, {problem2params} from '../model/problem';
 import model from 'raw-loader!../model/model.mzn';
 import parseSolution from '../model/parseSolution';
@@ -38,9 +38,15 @@ export class ApplicationStore {
   @observable
   rightSelectedSolution: ISolution | null = null;
 
-
   @observable
   solving: boolean = false;
+
+  @observable
+  hoveredSolution: ISolution | null = null;
+  @observable
+  hoveredTruck: ITruck | null = null;
+  @observable
+  hoveredCustomer: ICustomer | null = null;
 
   constructor() {
     this.solve();

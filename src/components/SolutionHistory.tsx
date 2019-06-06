@@ -3,6 +3,7 @@ import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import {ISolution} from '../model/interfaces';
+import classNames from 'classnames';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -46,6 +47,9 @@ const styles = (_theme: Theme) => createStyles({
     '&:hover::after': {
       opacity: 1,
     }
+  },
+  selected: {
+    boxShadow: '0 0 5px 3px orange'
   }
 });
 
@@ -81,7 +85,8 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
 
     return <div className={classes.root}>
       {store.solutions.map((s) => <div
-        key={s.id} className={classes.bar} title={s.name} data-distance={`${Math.round(s.distance / 100) / 10 } km`} style={{height: `${toPercent(s.distance)}%`}}
+        key={s.id} className={classNames(classes.bar, {[classes.selected] : store.hoveredSolution === s})} title={s.name} data-distance={`${Math.round(s.distance / 100) / 10 } km`} style={{height: `${toPercent(s.distance)}%`}}
+        onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
         onClick={() => this.onBarClick(s)}
       />)}
     </div>;

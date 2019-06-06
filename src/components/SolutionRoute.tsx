@@ -4,6 +4,7 @@ import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import {ISolution, ITruckRoute, ILatLng} from '../model/interfaces';
 import {line} from 'd3-shape';
+import classNames from 'classnames';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -18,6 +19,15 @@ const styles = (_theme: Theme) => createStyles({
     '& text': {
       textAnchor: 'middle',
       verticalAlign: 'center'
+    }
+  },
+  selected: {
+    '& path': {
+      strokeOpacity: 1,
+      strokeWidth: 5
+    },
+    '& circle': {
+      transform: 'scale(1.2)'
     }
   }
 });
@@ -34,26 +44,29 @@ export interface ISolutionRouteProps extends WithStyles<typeof styles>, IWithSto
 
 export interface ISolutionTruckRouteProps extends WithStyles<typeof styles>, IWithStore {
   truck: ITruckRoute;
+  solution: ISolution;
   lat2y(lat: number): number;
   lng2x(lng: number): number;
 }
 
-
+@observer
 class SolutionTruckRoute extends React.Component<ISolutionTruckRouteProps> {
   render() {
-    const {truck, lat2y, lng2x, classes} = this.props;
-    // const store = this.props.store!;
+    const {truck, lat2y, lng2x, classes, solution} = this.props;
+    const store = this.props.store!;
 
     const lineGen = line<ILatLng>()
       .x((v) => lng2x(v.lng))
       .y((v) => lat2y(v.lat));
 
-    return <g>
-      {truck.route.map((r, i) => <g key={`${r.customer.id}${i}`} className={classes.customer}>
+    return <g className={classNames({[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == null})} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
+      {truck.route.map((r, i) => <g key={`${r.customer.id}${i}`} className={classNames(classes.customer, {[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer === r.customer})} onMouseEnter={() => store.hoveredCustomer = r.customer} onMouseLeave={() => store.hoveredCustomer = null}>
         <path d={lineGen(r.wayPointsTo)!} style={{stroke: truck.truck.color}} />
-        <circle cy={lat2y(r.customer.lat)} cx={lng2x(r.customer.lng)} style={{fill: truck.truck.color}} r="5">
-          <title>{r.customer.name}</title>
-        </circle>
+        <g transform={`translate(${lng2x(r.customer.lng)},${lat2y(r.customer.lat)})`}>
+          <circle style={{fill: truck.truck.color}} r="5">
+            <title>{r.customer.name}</title>
+          </circle>
+        </g>
         <text y={lat2y(r.customer.lat)} x={lng2x(r.customer.lng)} >{r.customer.name}</text>
       </g>)}
     </g>;

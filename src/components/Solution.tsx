@@ -20,6 +20,9 @@ const styles = (_theme: Theme) => createStyles({
     '& > *': {
       flex: '1 1 0'
     }
+  },
+  selected: {
+    boxShadow: '0 0 5px 3px orange'
   }
 });
 
@@ -37,6 +40,7 @@ export interface ISolutionProps extends WithStyles<typeof styles>, IWithStore {
 class Solution extends React.Component<ISolutionProps> {
   render() {
     const classes = this.props.classes;
+    const store = this.props.store!;
     const solution = this.props.solution;
 
     if (!solution) {
@@ -45,7 +49,9 @@ class Solution extends React.Component<ISolutionProps> {
       </div>;
     }
 
-    return <div className={classNames(classes.root, this.props.className)}>
+    return <div className={classNames(classes.root, this.props.className, {[classes.selected]: store.hoveredSolution === solution})}
+            onMouseEnter={() => store.hoveredSolution = solution}
+            onMouseLeave={() => store.hoveredSolution = null}>
       <Typography variant="h6">{solution.name}</Typography>
       <div className={classes.main}>
         <MareyChart solution={solution} />

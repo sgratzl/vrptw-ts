@@ -7,6 +7,7 @@ import GalleryItem from './GalleryItem';
 const styles = (_theme: Theme) => createStyles({
   root: {
     display: 'flex',
+    margin: '1rem'
   }
 });
 
