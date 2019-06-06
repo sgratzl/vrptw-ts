@@ -35,6 +35,7 @@ export interface IServedCustomer {
   departureTime: number;
   // distance to this customer
   distanceTo: number;
+  timeTo: number;
 
   // way points to drive to this customer
   wayPointsTo: ILatLng[];

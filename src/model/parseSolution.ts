@@ -16,12 +16,12 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
   }));
   // since starting with 1
   const truckById = (id: number) => trucks[id - 1];
-  const customerById = (id: number) => id >= problem.customers.length ? depot : problem.customers[id - 1];
+  const customerById = (id: number) => id > problem.customers.length ? depot : problem.customers[id - 1];
 
   // assign all points to a truck
-  solution.successor.forEach((customerId, i) => {
+  solution.successor.forEach((_, i) => {
     const truck = truckById(solution.vehicleOf[i]);
-    const customer = customerById(customerId);
+    const customer = customerById(i + 1);
     const arrivalTime = solution.arrivalTime[i];
     const startOfService = solution.startOfService[i];
 
@@ -42,6 +42,7 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
       endOfService: startOfService + customer.serviceTime,
       departureTime: NaN, // computed after
       distanceTo: NaN, // computed later
+      timeTo: NaN,
       wayPointsTo: [] // computed later
     };
     servedCustomers.push(servedCustomer);
@@ -69,21 +70,8 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
     const route = truck.route;
     // sort by arrivalTime
     route.sort((a, b) => a.arrivalTime - b.arrivalTime);
-    // console.assert(route[0].customer === depot, 'end at depot');
+    console.assert(route[0].customer === depot, 'end at depot');
     console.assert(route[truck.route.length - 1].customer === depot, 'end at depot');
-
-    if (route[0].customer !== depot) {
-      // doesn't start at depot create a fake one
-      route.unshift({
-        customer: depot,
-        arrivalTime: 0,
-        startOfService: 0,
-        endOfService: 0,
-        departureTime: NaN, // computed after
-        distanceTo: 0,
-        wayPointsTo: []
-      });
-    }
 
     const start = route[0];
     truck.startTime = start.arrivalTime;
@@ -96,6 +84,7 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
       const distance = problem.distances[from.customer.id][to.customer.id];
       const travelTime = problem.travelTimes[from.customer.id][to.customer.id];
       to.distanceTo = distance;
+      to.timeTo = travelTime;
       from.departureTime = to.arrivalTime - travelTime;
       to.wayPointsTo = computeWayPoints(from.customer, to.customer);
       truck.totalDistance += distance;
