@@ -114,7 +114,7 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
 function computeRouteWayPoints(servedCustomer: IServedCustomer) {
   const line = servedCustomer.wayPointsTo;
   return computeRoute(line[0].lat, line[0].lng, line[1].lat, line[1].lng).then((wayPoints) => {
-    servedCustomer.wayPointsTo = wayPoints.map((w) => ({lat: w[0], lng: w[1]}));
+    servedCustomer.wayPointsTo = wayPoints.map((w) => ({lng: w[0], lat: w[1]}));
     return servedCustomer;
   });
 }

@@ -14,11 +14,12 @@ function callService(x1: number, y1: number, x2: number, y2: number) {
   });
 }
 
+// ORDER: lng,lat
 export default function computeRoute(x1: number, y1: number, x2: number, y2: number): Promise<[number, number][]> {
   return callService(x1, y1, x2, y2).then((information) => {
     const steps = information.routes[0].legs[0].steps;
     // console.log(steps);
-    const wayPoints = [];
+    const wayPoints: [number, number][] = [];
     for (const step of steps) {
       // Only consider the first and last intersections per step is good enough so that the drawing line is much smoother.
       wayPoints.push(step.intersections[0].location);
@@ -28,7 +29,8 @@ export default function computeRoute(x1: number, y1: number, x2: number, y2: num
       //  wayPoints.push(steps[i].intersections[j]);
       // }
     }
-    return wayPoints;
+    // correct order
+    return wayPoints
   }).catch((error) => {
     console.error('error while computing route', error);
     // When the server is down, draw straight lines to directly connect two customers.

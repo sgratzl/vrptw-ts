@@ -11,10 +11,13 @@ const styles = (_theme: Theme) => createStyles({
   },
   customer: {
     '& path': {
-      strokeOpacity: 0.5
+      strokeOpacity: 0.5,
+      strokeWidth: 3,
+      fill: 'none'
     },
     '& text': {
-      textAnchor: 'middle'
+      textAnchor: 'middle',
+      verticalAlign: 'center'
     }
   }
 });
@@ -25,33 +28,33 @@ export interface ISolutionRouteProps extends WithStyles<typeof styles>, IWithSto
   solution: ISolution;
   width: number;
   height: number;
-  lat2x(lat: number): number;
-  lng2y(lng: number): number;
+  lat2y(lat: number): number;
+  lng2x(lng: number): number;
 }
 
 export interface ISolutionTruckRouteProps extends WithStyles<typeof styles>, IWithStore {
   truck: ITruckRoute;
-  lat2x(lat: number): number;
-  lng2y(lng: number): number;
+  lat2y(lat: number): number;
+  lng2x(lng: number): number;
 }
 
 
 class SolutionTruckRoute extends React.Component<ISolutionTruckRouteProps> {
   render() {
-    const {truck, lat2x, lng2y, classes} = this.props;
+    const {truck, lat2y, lng2x, classes} = this.props;
     // const store = this.props.store!;
 
     const lineGen = line<ILatLng>()
-      .x((v) => lat2x(v.lat))
-      .y((v) => lng2y(v.lng));
+      .x((v) => lng2x(v.lng))
+      .y((v) => lat2y(v.lat));
 
     return <g>
       {truck.route.map((r, i) => <g key={`${r.customer.id}${i}`} className={classes.customer}>
         <path d={lineGen(r.wayPointsTo)!} style={{stroke: truck.truck.color}} />
-        <circle cx={lat2x(r.customer.lat)} cy={lng2y(r.customer.lng)} style={{fill: truck.truck.color}} r="5">
+        <circle cy={lat2y(r.customer.lat)} cx={lng2x(r.customer.lng)} style={{fill: truck.truck.color}} r="5">
           <title>{r.customer.name}</title>
         </circle>
-        <text x={lat2x(r.customer.lat)} y={lng2y(r.customer.lng)} >{r.customer.name}</text>
+        <text y={lat2y(r.customer.lat)} x={lng2x(r.customer.lng)} >{r.customer.name}</text>
       </g>)}
     </g>;
   }

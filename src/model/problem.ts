@@ -25,7 +25,7 @@ const problem: IProblem = {
     isDepot: true,
     name: smallProblem.name[smallProblem.name.length - 1],
     lat: smallProblem.locationX[smallProblem.locationX.length - 1],
-    lng: smallProblem.locationX[smallProblem.locationX.length - 1],
+    lng: smallProblem.locationY[smallProblem.locationY.length - 1],
     demand: 0,
     startTime: NaN,
     endTime: NaN,

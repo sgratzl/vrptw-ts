@@ -10,7 +10,16 @@ import classNames from 'classnames';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
+    display: 'flex',
+    flexDirection: 'column'
+  },
+  main: {
+    flex: '1 1 0',
+    display: 'flex',
 
+    '& > *': {
+      flex: '1 1 0'
+    }
   }
 });
 
@@ -38,8 +47,10 @@ class Solution extends React.Component<ISolutionProps> {
 
     return <div className={classNames(classes.root, this.props.className)}>
       <Typography variant="h6">{solution.name}</Typography>
-      <MareyChart solution={solution} />
-      <SolutionMap solution={solution} />
+      <div className={classes.main}>
+        <MareyChart solution={solution} />
+        <SolutionMap solution={solution} />
+      </div>
     </div>;
   }
 }
