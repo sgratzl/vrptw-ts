@@ -5,6 +5,7 @@ import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/sty
 import {ISolution, ITruckRoute, isDepot} from '../model/interfaces';
 import {Typography} from '@material-ui/core';
 import {scaleLinear} from 'd3';
+import Home from '@material-ui/icons/Home';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -56,8 +57,10 @@ const styles = (_theme: Theme) => createStyles({
     bottom: '25%'
   },
   label: {
-    fontSize: 'small'
-  }
+    fontSize: 'small',
+    width: '3em',
+    textAlign: 'center'
+  },
 });
 
 
@@ -81,6 +84,13 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
     return <div className={classes.truck}>
       <Typography>{truck.truck.name} ({truck.totalDistance} km, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
       {truck.route.map((route, i) => {
+
+        if (isDepot(route.customer)) {
+          return <div key={i === 0 ? -1 : route.customer.id} className={classes.customer}>
+            <Typography className={classes.label}><Home fontSize="small"/></Typography>
+          </div>;
+        }
+
         const startWindow = scale(route.customer.startTime);
         const widthWindow = scale(route.customer.endTime) - startWindow;
         const startArrive = scale(route.arrivalTime);
@@ -88,15 +98,12 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
         const startService = scale(route.startOfService);
         const widthService = scale(route.endOfService) - startService;
 
-        const details = <React.Fragment>
-          <div style={{left: `${startWindow}%`, width: `${widthWindow}%`}} className={classes.window}/>
-          <div style={{left: `${startArrive}%`, width: `${widthArrive}%`, background: truck.truck.color}} className={classes.effective} />
-          <div style={{left: `${startService}%`, width: `${widthService}%`, background: truck.truck.color}} className={classes.service} />
-        </React.Fragment>;
         return <div key={i === 0 ? -1 : route.customer.id} className={classes.customer}>
           <Typography className={classes.label}>{route.customer.name}</Typography>
           <div className={classes.timeline}>
-            {!isDepot(route.customer) ? details : null}
+          <div style={{left: `${startWindow}%`, width: `${widthWindow}%`}} className={classes.window}/>
+          <div style={{left: `${startArrive}%`, width: `${widthArrive}%`, background: truck.truck.color}} className={classes.effective} />
+          <div style={{left: `${startService}%`, width: `${widthService}%`, background: truck.truck.color}} className={classes.service} />
           </div>
         </div>;
       })}
