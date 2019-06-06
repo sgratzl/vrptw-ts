@@ -35,11 +35,18 @@ export class ApplicationStore {
   @observable
   rightSelectedSolution: ISolution | null = null;
 
+  constructor() {
+    this.solve();
+  }
+
   @action
   solve() {
     const fullModel = model + this.extraConstraints.join('\n');
 
-    this.backend.solve(fullModel, this.params).then((result) => {
+    this.backend.solve({
+      model: fullModel,
+      all_solutions: true
+    }, this.params).then((result) => {
       const solutions = result.solutions.map((s) => (<IServerSolution><unknown>s.assignments));
       Promise.all(solutions.map((s) => parseSolution(this.problem, s, this.solutionCounter++))).then((solutions) => {
         this.solutions.push(...solutions);

@@ -2,7 +2,7 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from './stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {AppBar, CssBaseline} from '@material-ui/core';
+import {AppBar, CssBaseline, Toolbar, Typography} from '@material-ui/core';
 import Solution from './components/Solution';
 import Gallery from './components/Gallery';
 import SolutionStats from './components/SolutionStats';
@@ -23,7 +23,9 @@ const styles = (theme: Theme) => createStyles({
   compare: {
     display: 'flex',
     '& > *': {
-      flex: '1 1 0'
+      flex: '1 1 0',
+      marginLeft: '1rem',
+      marginRight: '1rem'
     }
   }
 });
@@ -44,7 +46,12 @@ class App extends React.Component<IAppProps> {
 
     return <div className={classes.root}>
       <CssBaseline />
-      <AppBar>
+      <AppBar position="static" color="default">
+        <Toolbar>
+          <Typography variant="h6" color="inherit">
+            VRPTW
+          </Typography>
+        </Toolbar>
       </AppBar>
       <div className={classes.appBarSpacer} />
       <main className={classes.main}>

@@ -16,7 +16,7 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
   }));
   // since starting with 1
   const truckById = (id: number) => trucks[id - 1];
-  const customerById = (id: number) => problem.customers[id - 1] || depot;
+  const customerById = (id: number) => id >= problem.customers.length ? depot : problem.customers[id - 1];
 
   // assign all points to a truck
   solution.successor.forEach((customerId, i) => {
@@ -69,8 +69,21 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
     const route = truck.route;
     // sort by arrivalTime
     route.sort((a, b) => a.arrivalTime - b.arrivalTime);
-    console.assert(route[0].customer === depot, 'end at depot');
+    // console.assert(route[0].customer === depot, 'end at depot');
     console.assert(route[truck.route.length - 1].customer === depot, 'end at depot');
+
+    if (route[0].customer !== depot) {
+      // doesn't start at depot create a fake one
+      route.unshift({
+        customer: depot,
+        arrivalTime: 0,
+        startOfService: 0,
+        endOfService: 0,
+        departureTime: NaN, // computed after
+        distanceTo: 0,
+        wayPointsTo: []
+      });
+    }
 
     const start = route[0];
     truck.startTime = start.arrivalTime;
@@ -89,7 +102,7 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
     }
   }
 
-  return Promise.all(servedCustomers.map(computeRouteWayPoints)).then(() => ({
+  return Promise.all(servedCustomers.filter((d) => d.wayPointsTo.length > 0).map(computeRouteWayPoints)).then(() => ({
     id: i,
     name: `Solution ${i + 1}`,
     distance: solution.objective,
