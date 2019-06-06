@@ -81,7 +81,7 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
 
     return <div className={classes.root}>
       {store.solutions.map((s) => <div
-        key={s.id} className={classes.bar} title={s.name} data-distance={`${s.distance} km`} style={{height: `${toPercent(s.distance)}%`}}
+        key={s.id} className={classes.bar} title={s.name} data-distance={`${Math.round(s.distance / 100) / 10 } km`} style={{height: `${toPercent(s.distance)}%`}}
         onClick={() => this.onBarClick(s)}
       />)}
     </div>;

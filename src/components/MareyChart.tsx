@@ -106,7 +106,7 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
     };
 
     return <div className={classes.truck} style={{flexGrow: truck.route.length}}>
-      <Typography>{truck.truck.name} ({truck.totalDistance} km, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
+      <Typography>{truck.truck.name} ({Math.round(truck.totalDistance / 100) / 10 } km, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
       <div className={classes.route}>
       <ContainerDimensions>{renderRoute}</ContainerDimensions>
       </div>
