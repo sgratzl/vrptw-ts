@@ -109,6 +109,7 @@
     "mobx-react": "^6.0.3",
     "react": "^16.8.6",
     "react-async-component": "^2.0.0",
+    "react-container-dimensions": "^1.4.1",
     "react-dom": "^16.8.6",
     "typeface-roboto": "0.0.54"
   }

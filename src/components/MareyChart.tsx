@@ -2,7 +2,7 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {ISolution, ITruckRoute, isDepot} from '../model/interfaces';
+import {ISolution, ITruckRoute, isDepot, IServedCustomer} from '../model/interfaces';
 import {Typography} from '@material-ui/core';
 import {scaleLinear} from 'd3';
 import Home from '@material-ui/icons/Home';
@@ -57,10 +57,14 @@ const styles = (_theme: Theme) => createStyles({
     bottom: '25%'
   },
   label: {
-    fontSize: 'small',
     width: '3em',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontSize: '1.25rem',
+    transform: 'scale(0.75,0.75)'
   },
+  connector: {
+    transformOrigin: 'left center',
+  }
 });
 
 
@@ -73,6 +77,7 @@ interface IMareyTruckProps extends WithStyles<typeof styles>, IWithStore {
   truck: ITruckRoute;
 }
 
+
 @inject('store')
 @observer
 class MareyTruck extends React.Component<IMareyTruckProps> {
@@ -81,13 +86,36 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
     const store = this.props.store!;
     const scale = scaleLinear().domain([0, store.maxFinishTime]).range([0, 100]).clamp(true);
 
+    const computeLineStyle = (a: IServedCustomer, b: IServedCustomer): React.CSSProperties => {
+      const leave = scale(a.departureTime);
+      const arrive = scale(b.arrivalTime);
+
+      const width = arrive - leave;
+      const lineHeight = 30 / 4; // TODO
+
+      const length = Math.sqrt(Math.pow(lineHeight, 2) + Math.pow(width, 2));
+
+      const angle = Math.atan2(lineHeight, width);
+
+      return {
+        left: `${leave}%`,
+        width: `${lineHeight}%`,
+        transform: `rotate(${angle}rad)`
+      };
+  };
+
     return <div className={classes.truck}>
       <Typography>{truck.truck.name} ({truck.totalDistance} km, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
       {truck.route.map((route, i) => {
 
+        const connector = () => <div style={Object.assign(computeLineStyle(route, truck.route[i + 1]!), {background: truck.truck.color})} className={`${classes.connector} ${classes.effective}`} />;
+
         if (isDepot(route.customer)) {
           return <div key={i === 0 ? -1 : route.customer.id} className={classes.customer}>
-            <Typography className={classes.label}><Home fontSize="small"/></Typography>
+            <Typography className={classes.label}><Home fontSize="small" /></Typography>
+            <div className={classes.timeline}>
+              {i === 0 && connector()}
+            </div>
           </div>;
         }
 
@@ -101,9 +129,10 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
         return <div key={i === 0 ? -1 : route.customer.id} className={classes.customer}>
           <Typography className={classes.label}>{route.customer.name}</Typography>
           <div className={classes.timeline}>
-          <div style={{left: `${startWindow}%`, width: `${widthWindow}%`}} className={classes.window}/>
-          <div style={{left: `${startArrive}%`, width: `${widthArrive}%`, background: truck.truck.color}} className={classes.effective} />
-          <div style={{left: `${startService}%`, width: `${widthService}%`, background: truck.truck.color}} className={classes.service} />
+            <div style={{left: `${startWindow}%`, width: `${widthWindow}%`}} className={classes.window}/>
+            <div style={{left: `${startArrive}%`, width: `${widthArrive}%`, background: truck.truck.color}} className={classes.effective} />
+            <div style={{left: `${startService}%`, width: `${widthService}%`, background: truck.truck.color}} className={classes.service} />
+            {connector()}
           </div>
         </div>;
       })}

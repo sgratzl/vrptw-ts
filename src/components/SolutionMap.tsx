@@ -7,6 +7,7 @@ import {bind} from 'decko';
 import SolutionRoute from './SolutionRoute';
 import {map, tileLayer, Map} from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import ContainerDimensions from 'react-container-dimensions';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -30,8 +31,6 @@ export interface ISolutionMapProps extends WithStyles<typeof styles>, IWithStore
 }
 
 interface ISolutionMapImplState {
-  width: number;
-  height: number;
   lat2y(v: number): number;
   lng2x(v: number): number;
 }
@@ -43,8 +42,6 @@ class SolutionMapImpl extends React.Component<ISolutionMapProps, ISolutionMapImp
     super(props);
 
     this.state = {
-      width: 0,
-      height: 0,
       lat2y: (v) => v,
       lng2x: (v) => v
     };
@@ -74,19 +71,13 @@ class SolutionMapImpl extends React.Component<ISolutionMapProps, ISolutionMapImp
       zoom: 12,
     });
     this.map.addLayer(layer);
-
-    const width = this.map.getContainer().clientWidth;
-    const height = this.map.getContainer().clientHeight;
-
     this.setState({
       lat2y: (v) => {
         return this.map ? this.map.latLngToLayerPoint([v, 0]).y : v;
       },
       lng2x: (v) => {
         return this.map ? this.map.latLngToLayerPoint([0, v]).x : v;
-      },
-      width,
-      height
+      }
     });
   }
 
@@ -101,7 +92,9 @@ class SolutionMapImpl extends React.Component<ISolutionMapProps, ISolutionMapImp
     return <div className={classes.root}>
       <div className={classes.root} ref={this.assignRef}>
       </div>
-      <SolutionRoute solution={solution} {...this.state} />
+      <ContainerDimensions>
+        {(args) => <SolutionRoute solution={solution} {...this.state} {...args} />}
+      </ContainerDimensions>
     </div>;
   }
 }
