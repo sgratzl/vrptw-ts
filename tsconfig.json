@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "target": "es5",
+    "composite": true,
+    "importHelpers": true,
+    "sourceMap": true,
+    "moduleResolution": "node",
+    "jsx": "react",
+    "experimentalDecorators": true,
+    "lib": [
+      "dom",
+      "es2015",
+      "es2016.array.include",
+      "es2017.object"
+    ],
+    "declaration": true,
+    "declarationMap": true,
+    "removeComments": false,
+    "noImplicitAny": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noImplicitThis": true,
+    "noUnusedParameters": true,
+    "strict": true,
+    "stripInternal": true,
+    "esModuleInterop": true
+  },
+  "compileOnSave": false,
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tsd.d.ts"
+  ]
+}
