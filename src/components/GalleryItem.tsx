@@ -23,8 +23,10 @@ class GalleryItem extends React.Component<IGalleryItemProps> {
   render() {
     const classes = this.props.classes;
     const store = this.props.store!;
+    const solution = this.props.solution;
 
     return <div className={classes.root}>
+      {solution.name}
     </div>;
   }
 }

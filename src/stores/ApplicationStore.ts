@@ -30,6 +30,11 @@ export class ApplicationStore {
   @observable
   solutions: ISolution[] = [];
 
+  @observable
+  leftSelectedSolution: ISolution | null = null;
+  @observable
+  rightSelectedSolution: ISolution | null = null;
+
   @action
   solve() {
     const fullModel = model + this.extraConstraints.join('\n');
@@ -38,6 +43,12 @@ export class ApplicationStore {
       const solutions = result.solutions.map((s) => (<IServerSolution><unknown>s.assignments));
       Promise.all(solutions.map((s) => parseSolution(this.problem, s, this.solutionCounter++))).then((solutions) => {
         this.solutions.push(...solutions);
+        if (!this.leftSelectedSolution) {
+          this.leftSelectedSolution = this.solutions[0];
+        }
+        if (!this.rightSelectedSolution) {
+          this.rightSelectedSolution = this.solutions[1];
+        }
       });
     });
   }

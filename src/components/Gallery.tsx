@@ -2,6 +2,7 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
+import GalleryItem from './GalleryItem';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -24,6 +25,7 @@ class Gallery extends React.Component<IGalleryProps> {
     const store = this.props.store!;
 
     return <div className={classes.root}>
+      {store.solutions.map((s) => <GalleryItem solution={s} key={s.id} />)}
     </div>;
   }
 }

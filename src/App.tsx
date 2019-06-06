@@ -3,6 +3,10 @@ import {observer, inject} from 'mobx-react';
 import {IWithStore} from './stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import {AppBar, CssBaseline} from '@material-ui/core';
+import Solution from './components/Solution';
+import Gallery from './components/Gallery';
+import SolutionStats from './components/SolutionStats';
+import SolutionHistory from './components/SolutionHistory';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -16,6 +20,12 @@ const styles = (theme: Theme) => createStyles({
     flex: '1 1 0',
     display: 'grid',
   },
+  compare: {
+    display: 'flex',
+    '& > *': {
+      flex: '1 1 0'
+    }
+  }
 });
 
 
@@ -35,11 +45,16 @@ class App extends React.Component<IAppProps> {
     return <div className={classes.root}>
       <CssBaseline />
       <AppBar>
-
       </AppBar>
-
       <div className={classes.appBarSpacer} />
       <main className={classes.main}>
+        <section className={classes.compare}>
+          <Solution solution={store.leftSelectedSolution} orientation="left" />
+          <Solution solution={store.rightSelectedSolution} orientation="right" />
+        </section>
+        <SolutionStats />
+        <SolutionHistory />
+        <Gallery />
       </main>
     </div>;
   }
