@@ -31,6 +31,9 @@ export class ApplicationStore {
   solutions: ISolution[] = [];
 
   @observable
+  gallerySolutions: ISolution[] = [];
+
+  @observable
   leftSelectedSolution: ISolution | null = null;
   @observable
   rightSelectedSolution: ISolution | null = null;
@@ -70,5 +73,10 @@ export class ApplicationStore {
   @computed
   private get params() {
     return problem2params(this.problem);
+  }
+
+  @computed
+  get maxDistance() {
+    return this.solutions.reduce((acc, s) => Math.max(acc, s.distance), 0);
   }
 }

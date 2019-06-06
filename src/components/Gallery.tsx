@@ -25,7 +25,7 @@ class Gallery extends React.Component<IGalleryProps> {
     const store = this.props.store!;
 
     return <div className={classes.root}>
-      {store.solutions.map((s) => <GalleryItem solution={s} key={s.id} />)}
+      {store.gallerySolutions.map((s) => <GalleryItem solution={s} key={s.id} />)}
     </div>;
   }
 }

@@ -5,7 +5,45 @@ import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/sty
 
 const styles = (_theme: Theme) => createStyles({
   root: {
+    display: 'flex',
+    position: 'relative',
+    alignItems: 'flex-end',
+    padding: '0 1rem',
+    borderBottom: '2px solid black',
+  },
+  bar: {
+    marginRight: '1rem',
+    position: 'relative',
+    width: '2rem',
+    height: '0%',
+    transition: 'height 0.5 ease',
+    background: 'lightgrey',
 
+    '&::before': {
+      content: 'attr(title)',
+      position: 'absolute',
+      top: '100%',
+      fontSize: 'x-small',
+      textAlign: 'center',
+      left: '-3em',
+      right: '-3em'
+    },
+
+    '&::after': {
+      content: 'attr(data-distance)',
+      position: 'absolute',
+      bottom: '100%',
+      fontSize: 'small',
+      textAlign: 'center',
+      left: '-3em',
+      right: '-3em',
+      opacity: 0,
+      transition: 'opacity 0.5s ease'
+    },
+
+    '&:hover::after': {
+      opacity: 1,
+    }
   }
 });
 
@@ -23,7 +61,11 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
     const classes = this.props.classes;
     const store = this.props.store!;
 
+
+    const toPercent = (distance: number) => Math.round(100 * 100 * distance / store.maxDistance) / 100;
+
     return <div className={classes.root}>
+      {store.solutions.map((s) => <div key={s.id} className={classes.bar} title={s.name} data-distance={`${s.distance} km`} style={{height: `${toPercent(s.distance)}%`}}/>)}
     </div>;
   }
 }
