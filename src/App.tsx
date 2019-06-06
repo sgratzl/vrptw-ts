@@ -2,8 +2,7 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from './stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import classNames from 'classnames';
+import {AppBar, CssBaseline} from '@material-ui/core';
 
 const styles = (theme: Theme) => createStyles({
   root: {
@@ -34,7 +33,11 @@ class App extends React.Component<IAppProps> {
     const store = this.props.store!;
 
     return <div className={classes.root}>
-      <CssBaseline/>
+      <CssBaseline />
+      <AppBar>
+
+      </AppBar>
+
       <div className={classes.appBarSpacer} />
       <main className={classes.main}>
       </main>
