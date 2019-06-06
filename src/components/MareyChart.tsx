@@ -2,10 +2,11 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {ISolution, ITruckRoute, isDepot, IServedCustomer} from '../model/interfaces';
+import {ISolution, ITruckRoute, isDepot} from '../model/interfaces';
 import {Typography} from '@material-ui/core';
-import {scaleLinear} from 'd3';
+import {scaleLinear, scaleBand, line} from 'd3';
 import Home from '@material-ui/icons/Home';
+import ContainerDimensions from 'react-container-dimensions';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -15,55 +16,39 @@ const styles = (_theme: Theme) => createStyles({
   truck: {
     display: 'flex',
     flexDirection: 'column',
+    flex: '1 1 0',
   },
-  customer: {
-    display: 'flex',
-  },
-  timeline: {
+  route: {
     flex: '1 1 0',
     position: 'relative',
-
-    '&::before': {
-      content: ' ',
-      position: 'absolute',
-      top: '50%',
-      left: 0,
-      right: 0,
-      height: '1px',
-      borderBottom: '2px solid black'
+    '& path,line': {
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round'
+    },
+    '& svg': {
+      position: 'absolute'
+    }
+    '& text': {
+      dominantBaseline: 'hanging'
     }
   },
-  window: {
-    position: 'absolute',
-    borderRadius: 5,
-    background: 'lightgray',
-    transition: 'all 0.5s ease',
-    top: '10%',
-    bottom: '10%'
+  customer: {
   },
-  effective: {
-    position: 'absolute',
-    borderRadius: 5,
-    transition: 'all 0.5s ease',
-    top: '15%',
-    bottom: '15%',
-    opacity: 0.5
+  window: {
+    stroke: 'lightgray',
+    strokeWidth: 10
   },
   service: {
-    position: 'absolute',
-    transition: 'all 0.5s ease',
-    borderRadius: 5,
-    top: '25%',
-    bottom: '25%'
+    strokeWidth: 8
   },
-  label: {
-    width: '3em',
-    textAlign: 'center',
-    fontSize: '1.25rem',
-    transform: 'scale(0.75,0.75)'
+  effective: {
+    fill: 'none',
+    strokeOpacity: 0.5,
+    strokeWidth: 8
   },
-  connector: {
-    transformOrigin: 'left center',
+  timeline: {
+    stroke: 'black',
+    strokeWidth: 1
   }
 });
 
@@ -81,61 +66,50 @@ interface IMareyTruckProps extends WithStyles<typeof styles>, IWithStore {
 @inject('store')
 @observer
 class MareyTruck extends React.Component<IMareyTruckProps> {
+
   render() {
     const {truck, classes} = this.props;
     const store = this.props.store!;
-    const scale = scaleLinear().domain([0, store.maxFinishTime]).range([0, 100]).clamp(true);
 
-    const computeLineStyle = (a: IServedCustomer, b: IServedCustomer): React.CSSProperties => {
-      const leave = scale(a.departureTime);
-      const arrive = scale(b.arrivalTime);
+    const renderRoute = ({width, height}: {width: number, height: number}) => {
+      const xscale = scaleLinear().domain([0, store.maxFinishTime]).range([25, width - 20]).clamp(true);
+      const yscale = scaleBand().domain(truck.route.map((_, i) => i.toString())).range([0, height]).padding(0.1);
+      const center = yscale.bandwidth() / 2;
 
-      const width = arrive - leave;
-      const lineHeight = 30 / 4; // TODO
+      const genPath = () => {
+        const points: [number, number][] = [];
+        truck.route.forEach((route, i) => {
 
-      const length = Math.sqrt(Math.pow(lineHeight, 2) + Math.pow(width, 2));
-
-      const angle = Math.atan2(lineHeight, width);
-
-      return {
-        left: `${leave}%`,
-        width: `${lineHeight}%`,
-        transform: `rotate(${angle}rad)`
+          const y = center + yscale(i.toString())!;
+          if (i > 0) {
+            points.push([route.arrivalTime, y]);
+          }
+          if (i < truck.route.length - 1) {
+            points.push([route.departureTime, y]);
+          }
+        });
+        return line<[number, number]>().x((v) => xscale(v[0]))(points);
       };
-  };
 
-    return <div className={classes.truck}>
+      return <svg width={width} height={height}>
+        {truck.route.map((route, i) => {
+          const depot = isDepot(route.customer);
+          return <g key={i === 0 ? -1 : route.customer.id} className={classes.customer} transform={`translate(0, ${yscale(i.toString())})`}>
+            {depot ? <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" transform="translate(-2,0)scale(0.6)" /> : <text>{route.customer.name}</text>}
+            <line className={classes.timeline} x1={xscale(0)} y1={center} x2={xscale(store.maxFinishTime)} y2={center} />
+            {!depot && <line className={classes.window} x1={xscale(route.customer.startTime)} y1={center} x2={xscale(route.customer.endTime)} y2={center} />}
+            {!depot && <line className={classes.service} x1={xscale(route.startOfService)} y1={center} x2={xscale(route.endOfService)} y2={center} style={{stroke: truck.truck.color}}/>}
+          </g>;
+        })}
+        <path d={genPath()!} className={classes.effective} style={{stroke: truck.truck.color}}/>
+      </svg>;
+    };
+
+    return <div className={classes.truck} style={{flexGrow: truck.route.length}}>
       <Typography>{truck.truck.name} ({truck.totalDistance} km, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
-      {truck.route.map((route, i) => {
-
-        const connector = () => <div style={Object.assign(computeLineStyle(route, truck.route[i + 1]!), {background: truck.truck.color})} className={`${classes.connector} ${classes.effective}`} />;
-
-        if (isDepot(route.customer)) {
-          return <div key={i === 0 ? -1 : route.customer.id} className={classes.customer}>
-            <Typography className={classes.label}><Home fontSize="small" /></Typography>
-            <div className={classes.timeline}>
-              {i === 0 && connector()}
-            </div>
-          </div>;
-        }
-
-        const startWindow = scale(route.customer.startTime);
-        const widthWindow = scale(route.customer.endTime) - startWindow;
-        const startArrive = scale(route.arrivalTime);
-        const widthArrive = scale(route.departureTime) - startArrive;
-        const startService = scale(route.startOfService);
-        const widthService = scale(route.endOfService) - startService;
-
-        return <div key={i === 0 ? -1 : route.customer.id} className={classes.customer}>
-          <Typography className={classes.label}>{route.customer.name}</Typography>
-          <div className={classes.timeline}>
-            <div style={{left: `${startWindow}%`, width: `${widthWindow}%`}} className={classes.window}/>
-            <div style={{left: `${startArrive}%`, width: `${widthArrive}%`, background: truck.truck.color}} className={classes.effective} />
-            <div style={{left: `${startService}%`, width: `${widthService}%`, background: truck.truck.color}} className={classes.service} />
-            {connector()}
-          </div>
-        </div>;
-      })}
+      <div className={classes.route}>
+      <ContainerDimensions>{renderRoute}</ContainerDimensions>
+      </div>
     </div>;
   }
 }
