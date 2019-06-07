@@ -17,17 +17,27 @@ const styles = (_theme: Theme) => createStyles({
       fill: 'none'
     },
     '& text': {
+      fontFamily: _theme.typography.fontFamily,
+      fontSize: '80%',
       textAnchor: 'middle',
-      verticalAlign: 'center'
+      dominantBaseline: 'central'
+    },
+    '& circle': {
+      transition: 'all 0.25s ease'
     }
   },
   selected: {
     '& path': {
       strokeOpacity: 1,
-      strokeWidth: 5
+      strokeWidth: 4
     },
     '& circle': {
-      transform: 'scale(1.2)'
+      transform: 'scale(1.5)'
+    }
+  },
+  selectedC: {
+    '& circle': {
+      transform: 'scale(1.5)'
     }
   }
 });
@@ -59,15 +69,15 @@ class SolutionTruckRoute extends React.Component<ISolutionTruckRouteProps> {
       .x((v) => lng2x(v.lng))
       .y((v) => lat2y(v.lat));
 
-    return <g className={classNames({[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == null})} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
-      {truck.route.map((r, i) => <g key={`${r.customer.id}${i}`} className={classNames(classes.customer, {[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer === r.customer})} onMouseEnter={() => store.hoveredCustomer = r.customer} onMouseLeave={() => store.hoveredCustomer = null}>
+    return <g className={classNames({[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == null})}>
+      {truck.route.map((r, i) => <g key={`${r.customer.id}${i}`} className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer === r.customer})} onMouseEnter={() => store.hoveredCustomer = r.customer} onMouseLeave={() => store.hoveredCustomer = null}>
         <path d={lineGen(r.wayPointsTo)!} style={{stroke: truck.truck.color}} />
         <g transform={`translate(${lng2x(r.customer.lng)},${lat2y(r.customer.lat)})`}>
-          <circle style={{fill: truck.truck.color}} r="5">
+          <circle style={{fill: truck.truck.color}} r="5" onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
             <title>{r.customer.name}</title>
           </circle>
+          <text onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>{r.customer.name}</text>
         </g>
-        <text y={lat2y(r.customer.lat)} x={lng2x(r.customer.lng)} >{r.customer.name}</text>
       </g>)}
     </g>;
   }

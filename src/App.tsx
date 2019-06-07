@@ -5,7 +5,6 @@ import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/sty
 import {AppBar, CssBaseline, Toolbar, Typography} from '@material-ui/core';
 import Solution from './components/Solution';
 import Gallery from './components/Gallery';
-import SolutionStats from './components/SolutionStats';
 import SolutionHistory from './components/SolutionHistory';
 
 const styles = (theme: Theme) => createStyles({
@@ -59,7 +58,6 @@ class App extends React.Component<IAppProps> {
           <Solution solution={store.leftSelectedSolution} orientation="left" />
           <Solution solution={store.rightSelectedSolution} orientation="right" />
         </section>
-        <SolutionStats />
         <SolutionHistory />
         <Gallery />
       </main>

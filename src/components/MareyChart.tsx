@@ -33,6 +33,7 @@ const styles = (_theme: Theme) => createStyles({
     }
   },
   customer: {
+    pointerEvents: 'all'
   },
   window: {
     stroke: 'lightgray',
@@ -81,7 +82,7 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
   render() {
     const {truck, classes, solution, width, height} = this.props;
     const store = this.props.store!;
-    const xscale = scaleLinear().domain([0, store.maxFinishTime]).range([25, width - 20]).clamp(true);
+    const xscale = scaleLinear().domain([0, store.maxFinishTime]).range([25, width - 5]).clamp(true);
     const yscale = scaleBand().domain(truck.route.map((_, i) => i.toString())).range([0, height]).padding(0.1);
     const center = yscale.bandwidth() / 2;
 
@@ -104,7 +105,7 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
       {truck.route.map((route, i) => {
         const depot = isDepot(route.customer);
         return <g key={i === 0 ? -1 : route.customer.id}
-          className={classes.customer} onMouseEnter={() => store.hoveredCustomer === route.customer} onMouseLeave={() => store.hoveredCustomer = null}
+          className={classes.customer} onMouseOver={() => store.hoveredCustomer === route.customer} onMouseOut={() => store.hoveredCustomer = null}
           transform={`translate(0, ${yscale(i.toString())})`}>
           {depot ? <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" transform="translate(-2,0)scale(0.6)" /> : <text>{route.customer.name}</text>}
           <line className={classNames(classes.timeline, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer === route.customer})} x1={xscale(0)} y1={center} x2={xscale(store.maxFinishTime)} y2={center} />
