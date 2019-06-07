@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from './stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
