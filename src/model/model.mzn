@@ -72,18 +72,18 @@ include "bin_packing_capa.mzn";
 constraint circuit(successor);
 % Set up links between depot nodes
 constraint forall (i in 1..nVehicles) (
-successor[nCustomers+nVehicles+i] = nCustomers+1+(i mod nVehicles)
+  successor[nCustomers+nVehicles+i] = nCustomers+1+(i mod nVehicles)
 );
 
 % Set up vehicle number for each location
 constraint forall (i in 1..nVehicles) (
-vehicleOf[nCustomers+i] = i /\
-vehicleOf[nCustomers+nVehicles+i] = i
+  vehicleOf[nCustomers+i] = i /\
+  vehicleOf[nCustomers+nVehicles+i] = i
 );
 
 % Each successor is on the same vehicle
 constraint forall (i in 1..nCustomers+nVehicles) (
-vehicleOf[i] = vehicleOf[successor[i]]
+  vehicleOf[i] = vehicleOf[successor[i]]
 );
 
 % The capacity of each vehicle must not be exceeded
@@ -91,17 +91,18 @@ constraint bin_packing_capa(capacity, [ vehicleOf[i] | i in Customers ], demand)
 
 % All vehicles start at time 0
 constraint forall (i in Vehicles) (
-arrivalTime[nCustomers+i] = 0 /\
-startOfService[nCustomers+i] = 0 /\
-arrivalTime[successor[nCustomers+i]] = tm[nCustomers+i,successor[nCustomers+i]]
+  arrivalTime[nCustomers+i] = 0 /\
+  startOfService[nCustomers+i] = 0 /\
+  arrivalTime[successor[nCustomers+i]] = tm[nCustomers+i,successor[nCustomers+i]]
 );
 
 % Each customer must be visited within their time window
 constraint forall (c in Customers) (
-startOfService[c] >= startTime[c] /\
-startOfService[c] <= endTime[c] /\
-arrivalTime[c] <= startOfService[c] /\
-arrivalTime[successor[c]] = startOfService[c]+serviceTime[c]+tm[c,successor[c]]
+  startOfService[c] >= startTime[c] /\
+  %startOfService[c] + serviceTime[c] <= endTime[c] /\
+  startOfService[c] <= endTime[c] /\
+  arrivalTime[c] <= startOfService[c] /\
+  arrivalTime[successor[c]] = startOfService[c]+serviceTime[c]+tm[c,successor[c]]
 );
 
 
