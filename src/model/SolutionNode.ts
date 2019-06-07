@@ -90,8 +90,8 @@ export default class SolutionNode implements IConstraints, ISolution {
         if (served.startOfService < customer.startTime) {
           violations.push(`Customer ${customer.name} served by ${truck.truck.name} before his/her start time`);
         }
-        if ((served.startOfService + customer.serviceTime) > customer.endTime) {
-          violations.push(`Customer ${customer.name} served by ${truck.truck.name} after or longer than his/her end time`);
+        if (served.startOfService > customer.endTime) {
+          violations.push(`Customer ${customer.name} served by ${truck.truck.name} after his/her end time`);
         }
       }
     }
