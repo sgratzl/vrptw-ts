@@ -26,7 +26,7 @@ Authors
 
 [mit-image]: https://img.shields.io/badge/License-MIT-yellow.svg
 [mit-url]: https://opensource.org/licenses/MIT
-[ci-image]: https://circleci.com/gh/sgratzl/vrptw-ts.svg?style=shield
+[ci-image]: https://circleci.com/gh/sgratzl/vrptw-ts.svg?style=shield&token=b7d1d91c83cdf5aa75546d3be1764b13db458c73
 [ci-url]: https://circleci.com/gh/sgratzl/vrptw-ts
-[ci-image-dev]: https://circleci.com/gh/sgratzl/vrptw-ts/tree/develop.svg?style=shield
+[ci-image-dev]: https://circleci.com/gh/sgratzl/vrptw-ts/tree/develop.svg?style=shield&token=b7d1d91c83cdf5aa75546d3be1764b13db458c73
 [ci-url-dev]: https://circleci.com/gh/sgratzl/vrptw-ts/tree/develop
