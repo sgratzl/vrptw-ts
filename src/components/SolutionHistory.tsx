@@ -3,13 +3,24 @@ import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import classNames from 'classnames';
-import {scaleLinear} from 'd3';
-import Axis from './Axis';
+import {scaleLinear, scaleBand} from 'd3';
 import SolutionNode from '../model/SolutionNode';
+import ContainerDimensions from 'react-container-dimensions';
+import {IconButton, Typography} from '@material-ui/core';
+import AddIcon from '@material-ui/icons/Add';
+import {bind} from 'decko';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
     display: 'flex',
+
+  },
+  chart: {
+    flex: '1 1 0',
+    position: 'relative',
+    '& > svg': {
+      position: 'absolute'
+    }
   },
   main: {
     flex: '1 1 0',
@@ -23,43 +34,31 @@ const styles = (_theme: Theme) => createStyles({
     width: '5em',
   },
   bar: {
-    marginRight: '1rem',
-    position: 'relative',
-    width: '2rem',
-    height: '0%',
-    transition: 'height 0.5 ease',
-    background: 'lightgrey',
+    fill: 'lightgrey',
     cursor: 'pointer',
-
-    '&::before': {
-      content: 'attr(title)',
-      position: 'absolute',
-      top: '100%',
-      fontSize: 'x-small',
-      textAlign: 'center',
-      paddingTop: '0.5em',
-      left: '-3em',
-      right: '-3em'
-    },
-
-    '&::after': {
-      content: 'attr(data-distance)',
-      position: 'absolute',
-      bottom: '100%',
-      fontSize: 'small',
-      textAlign: 'center',
-      left: '-3em',
-      right: '-3em',
-      opacity: 0,
-      transition: 'opacity 0.5s ease'
-    },
-
-    '&:hover::after': {
-      opacity: 1,
-    }
   },
   selected: {
     boxShadow: '0 0 5px 3px orange'
+  },
+  xaxis: {
+    '& line': {
+      stroke: 'black',
+      strokeWidth: 2
+    },
+    '& text': {
+      textAnchor: 'middle',
+      dominantBaseline: 'hanging'
+    }
+  },
+  yaxis: {
+    '& line': {
+      stroke: 'black',
+      strokeWidth: 2
+    },
+    '& text': {
+      textAnchor: 'end',
+      dominantBaseline: 'central'
+    }
   }
 });
 
@@ -69,10 +68,9 @@ export interface ISolutionHistoryProps extends WithStyles<typeof styles>, IWithS
 
 }
 
-
 @inject('store')
 @observer
-class SolutionHistory extends React.Component<ISolutionHistoryProps> {
+class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: number, height: number}> {
   private onBarClick(solution: SolutionNode) {
     const store = this.props.store!;
     if (!store.leftSelectedSolution) {
@@ -85,15 +83,76 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
     }
   }
 
+  render() {
+    const {width, height, classes} = this.props;
+    const store = this.props.store!;
+
+    const yscale = scaleLinear().domain([0, store.maxDistance]).rangeRound([height - 20, 20]);
+    const xscale = scaleBand().domain(store.solutions.map((d) => d.name)).range([80, width - 20]).padding(0.1);
+
+    let bandwidth = xscale.bandwidth();
+    let step = xscale.step();
+
+    if (bandwidth > 50) {
+      // limit to bandwidth 50 and 5px distance
+      bandwidth = 50;
+      step = 5;
+    }
+    const start = xscale.range()[0] + step;
+
+
+
+    return <svg width={width} height={height}>
+      <g>
+        {store.solutions.map((s, i) => <rect
+          key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
+          x={start + (bandwidth + step) * i} y={yscale(s.distance)} width={bandwidth} height={yscale.range()[0] - yscale(s.distance)}
+          onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
+          onClick={() => this.onBarClick(s)}
+        />)}
+      </g>
+      <g transform={`translate(${0},${yscale.range()[0]})`} className={classes.xaxis}>
+        <line x1={xscale.range()[0]} x2={xscale.range()[1]} />
+        {store.solutions.map((s, i) => <g key={s.id} transform={`translate(${start + (bandwidth + step) * i + bandwidth / 2}, 0)`} >
+            <line y2={3} />
+            <text y={5} >{s.name}</text>
+        </g>)}
+      </g>
+      <g transform={`translate(${xscale.range()[0]},0)`} className={classes.yaxis}>
+        <line y1={yscale.range()[0]} y2={yscale.range()[1]} />
+        {yscale.ticks().map((s) => <g key={s} transform={`translate(0,${yscale(s)!})`} >
+          <line x1={-3} />
+          <text x={-5}>{yscale.tickFormat()(s)}</text>
+        </g>)}
+      </g>
+    </svg>;
+  }
+}
+
+@inject('store')
+@observer
+class SolutionHistory extends React.Component<ISolutionHistoryProps> {
+  @bind
+  private freshSolution() {
+    this.props.store!.solveFresh();
+  }
+
 
   render() {
     const classes = this.props.classes;
-    const store = this.props.store!;
-
-    const scale = scaleLinear().domain([0, store.maxDistance]).rangeRound([0, 100]);
 
     return <div className={classes.root}>
-      <Axis scale={scale} className={classes.axis}/>
+      <Typography component="div" className={classes.chart}>
+        <ContainerDimensions>
+          {(args) => <HistoryBarChart {...args} classes={classes}/>}
+        </ContainerDimensions>
+      </Typography>
+      <div>
+        <IconButton onClick={this.freshSolution}>
+          <AddIcon />
+        </IconButton>
+      </div>
+      {/* <Axis scale={scale} className={classes.axis}/>
       <div className={classes.main}>
         {store.solutions.map((s) => <div
           key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
@@ -101,7 +160,7 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
           onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
           onClick={() => this.onBarClick(s)}
         />)}
-      </div>
+      </div> */}
     </div>;
   }
 }
