@@ -16,7 +16,9 @@ const styles = (_theme: Theme) => createStyles({
     display: 'flex',
     flexDirection: 'column',
     margin: '0.5rem',
-    padding: '0.5rem'
+    padding: '0.5rem',
+    border: '1px solid lightgray',
+    borderRadius: 5
   },
   error: {
     backgroundColor: _theme.palette.error.main

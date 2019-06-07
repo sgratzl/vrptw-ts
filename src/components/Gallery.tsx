@@ -3,6 +3,7 @@ import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import GalleryItem from './GalleryItem';
+import classNames from 'classnames';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -14,7 +15,7 @@ const styles = (_theme: Theme) => createStyles({
 
 
 export interface IGalleryProps extends WithStyles<typeof styles>, IWithStore {
-
+  className?: string;
 }
 
 
@@ -25,7 +26,7 @@ class Gallery extends React.Component<IGalleryProps> {
     const classes = this.props.classes;
     const store = this.props.store!;
 
-    return <div className={classes.root}>
+    return <div className={classNames(classes.root, this.props.className)}>
       {store.gallerySolutions.map((s) => <GalleryItem solution={s} key={s.id} />)}
     </div>;
   }

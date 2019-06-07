@@ -12,7 +12,9 @@ import SolutionStats from './SolutionStats';
 const styles = (_theme: Theme) => createStyles({
   root: {
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
+    border: '1px solid lightgray',
+    borderRadius: 5
   },
   selected: {
     boxShadow: '0 0 5px 3px orange'

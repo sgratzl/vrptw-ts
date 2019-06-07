@@ -71,7 +71,7 @@ const styles = (_theme: Theme) => createStyles({
 
 
 export interface ISolutionHistoryProps extends WithStyles<typeof styles>, IWithStore {
-
+  className?: string;
 }
 
 @inject('store')
@@ -147,7 +147,7 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
   render() {
     const classes = this.props.classes;
 
-    return <div className={classes.root}>
+    return <div className={classNames(classes.root, this.props.className)}>
       <Typography component="div" className={classes.chart}>
         <ContainerDimensions>
           {(args) => <HistoryBarChart {...args} classes={classes}/>}

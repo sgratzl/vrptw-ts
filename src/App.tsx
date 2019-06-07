@@ -16,15 +16,23 @@ const styles = (_theme: Theme) => createStyles({
   },
   main: {
     flex: '1 1 0',
-    display: 'grid',
+    display: 'flex',
+    flexDirection: 'column'
   },
   compare: {
+    flex: '0 0 auto',
     display: 'flex',
     '& > *': {
       flex: '1 1 0',
       marginLeft: '1rem',
       marginRight: '1rem'
     }
+  },
+  history: {
+    flex: '0 0 8rem',
+  },
+  gallery: {
+    flex: '0 0 auto',
   }
 });
 
@@ -56,8 +64,8 @@ class App extends React.Component<IAppProps> {
           <Solution solution={store.leftSelectedSolution} orientation="left" />
           <Solution solution={store.rightSelectedSolution} orientation="right" />
         </section>
-        <SolutionHistory />
-        <Gallery />
+        <SolutionHistory className={classes.history} />
+        <Gallery className={classes.gallery}/>
       </main>
     </div>;
   }
