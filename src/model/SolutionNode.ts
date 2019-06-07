@@ -1,7 +1,7 @@
-import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, ILockedTruckConstraint, IProblem} from './interfaces';
+import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, ILockedTruckConstraint, IProblem, isDepot} from './interfaces';
 import {observable, computed, action} from 'mobx';
 import {problem2params} from './problem';
-import {MODEL, constraints2code} from './constraints';
+import {MODEL, constraints2code, checkConstraints} from './constraints';
 
 export enum ESolutionNodeState {
   INTERACTIVE = 'interactive',
@@ -57,7 +57,7 @@ export default class SolutionNode implements IConstraints, ISolution {
 
   @computed
   get model() {
-    return `${MODEL}\n\n${constraints2code(this.problem.constraints)}\n\n${constraints2code(this)}`;
+    return `${MODEL}\n\n${constraints2code(this.problem)}\n\n${constraints2code(this)}`;
   }
 
   @computed
@@ -70,6 +70,37 @@ export default class SolutionNode implements IConstraints, ISolution {
     // best one so far
     this.solution = solution;
     this.partialResultDistances.push(solution.distance);
+
+    this.violations = this.checkViolations();
+  }
+
+  private checkViolations() {
+    const violations: string[] = [];
+    // check inherit constraints
+    for (const truck of this.solution.trucks) {
+      if (truck.usedCapacity > truck.truck.capacity) {
+        violations.push(`Truck ${truck.truck.name} used a capacity of ${truck.usedCapacity}/${truck.truck.capacity}`);
+      }
+
+      for (const served of truck.route) {
+        const customer = served.customer;
+        if (isDepot(customer)) {
+          continue;
+        }
+        if (served.startOfService < customer.startTime) {
+          violations.push(`Customer ${customer.name} served by ${truck.truck.name} before his/her start time`);
+        }
+        if ((served.startOfService + customer.serviceTime) > customer.endTime) {
+          violations.push(`Customer ${customer.name} served by ${truck.truck.name} after or longer than his/her end time`);
+        }
+      }
+    }
+
+    // check custom constraints
+    violations.push(...checkConstraints(this.solution, this.problem));
+    violations.push(...checkConstraints(this.solution, this));
+
+    return violations;
   }
 
   @computed

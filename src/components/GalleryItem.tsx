@@ -2,11 +2,11 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {ISolution} from '../model/interfaces';
 import {Typography} from '@material-ui/core';
 import SolutionRoute from './SolutionRoute';
 import {scaleLinear} from 'd3-scale';
 import classNames from 'classnames';
+import SolutionNode from '../model/SolutionNode';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -21,7 +21,7 @@ const styles = (_theme: Theme) => createStyles({
 
 
 export interface IGalleryItemProps extends WithStyles<typeof styles>, IWithStore {
-  solution: ISolution;
+  solution: SolutionNode;
 }
 
 // from Leaflet map.getBounds()

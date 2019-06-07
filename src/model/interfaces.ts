@@ -58,13 +58,12 @@ export interface IConstraints {
   lockedTrucks: ILockedTruckConstraint[];
 }
 
-export interface IProblem {
+export interface IProblem extends IConstraints {
   trucks: ITruck[];
   customers: ICustomer[];
   depot: IDepot;
   distances: number[][];
   travelTimes: number[][];
-  constraints: IConstraints;
 }
 
 export interface IServerSolution {

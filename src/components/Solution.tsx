@@ -2,12 +2,12 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {ISolution} from '../model/interfaces';
 import {Typography} from '@material-ui/core';
 import MareyChart from './MareyChart';
 import SolutionMap from './SolutionMap';
 import classNames from 'classnames';
 import SolutionStats from './SolutionStats';
+import SolutionNode from '../model/SolutionNode';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -37,7 +37,7 @@ const styles = (_theme: Theme) => createStyles({
 
 export interface ISolutionProps extends WithStyles<typeof styles>, IWithStore {
   className?: string;
-  solution: ISolution | null;
+  solution: SolutionNode | null;
   orientation: 'left' | 'right';
 }
 

@@ -33,7 +33,10 @@ const problem: IProblem = {
   },
   distances: smallProblem.params.distance,
   travelTimes: smallProblem.params.travelTime,
-  orderConstraints: []
+
+  lockedCustomers: [],
+  lockedTrucks: [],
+  partialOrderConstraints: []
 };
 
 export default problem;

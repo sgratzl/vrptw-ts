@@ -2,10 +2,10 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {ISolution} from '../model/interfaces';
 import classNames from 'classnames';
 import {scaleLinear} from 'd3';
 import Axis from './Axis';
+import SolutionNode from '../model/SolutionNode';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -73,7 +73,7 @@ export interface ISolutionHistoryProps extends WithStyles<typeof styles>, IWithS
 @inject('store')
 @observer
 class SolutionHistory extends React.Component<ISolutionHistoryProps> {
-  private onBarClick(solution: ISolution) {
+  private onBarClick(solution: SolutionNode) {
     const store = this.props.store!;
     if (!store.leftSelectedSolution) {
       store.leftSelectedSolution = solution;

@@ -2,11 +2,12 @@ import * as React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {ISolution, ITruckRoute, isDepot} from '../model/interfaces';
+import {ITruckRoute, isDepot} from '../model/interfaces';
 import {Typography} from '@material-ui/core';
 import {scaleLinear, scaleBand, line} from 'd3';
 import ContainerDimensions from 'react-container-dimensions';
 import classNames from 'classnames';
+import SolutionNode from '../model/SolutionNode';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -63,11 +64,11 @@ const styles = (_theme: Theme) => createStyles({
 
 
 export interface IMareyChartProps extends WithStyles<typeof styles>, IWithStore {
-  solution: ISolution;
+  solution: SolutionNode;
 }
 
 interface IMareyTruckProps extends WithStyles<typeof styles>, IWithStore {
-  solution: ISolution;
+  solution: SolutionNode;
   truck: ITruckRoute;
 }
 

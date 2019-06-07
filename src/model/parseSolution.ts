@@ -4,7 +4,6 @@ import {IProblem, IServedCustomer, IServerSolution, ITruckRoute, ILatLng, ISolut
 export default function parseSolution(problem: IProblem, solution: IServerSolution): Promise<ISolution> {
   const depot = problem.depot;
 
-  const violations: string[] = [];
   const servedCustomers: IServedCustomer[] = [];
 
   const trucks: ITruckRoute[] = problem.trucks.map((truck) => ({
@@ -28,14 +27,6 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
 
     truck.usedCapacity += customer.demand;
 
-    if (customer !== depot) {
-      if (startOfService < customer.startTime) {
-        violations.push(`Customer ${customer.name} served before his/her start time`);
-      }
-      if ((startOfService + customer.serviceTime) > customer.endTime) {
-        violations.push(`Customer ${customer.name} served after or longer than his/her end time`);
-      }
-    }
     const servedCustomer = {
       customer,
       arrivalTime,
@@ -64,10 +55,6 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
   for (const truck of trucks) {
     if (truck.route.length === 0) {
       truck.startTime = NaN;
-    }
-
-    if (truck.usedCapacity > truck.truck.capacity) {
-      violations.push(`Truck ${truck.truck.name} used a capacity of ${truck.usedCapacity}/${truck.truck.capacity}`);
     }
 
     const route = truck.route;
@@ -104,7 +91,6 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
   return Promise.all(servedCustomers.filter((d) => d.wayPointsTo.length > 0).map(computeRouteWayPoints)).then(() => ({
     distance: solution.objective,
     finishTime,
-    violations,
     trucks
   }));
 }
