@@ -1,7 +1,7 @@
 import computeRoute from '../server/route';
 import {IProblem, IServedCustomer, IServerSolution, ITruckRoute, ILatLng, ISolution} from './interfaces';
 
-export default function parseSolution(problem: IProblem, solution: IServerSolution, i: number): Promise<ISolution> {
+export default function parseSolution(problem: IProblem, solution: IServerSolution): Promise<ISolution> {
   const depot = problem.depot;
 
   const violations: string[] = [];
@@ -102,8 +102,6 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
   }
 
   return Promise.all(servedCustomers.filter((d) => d.wayPointsTo.length > 0).map(computeRouteWayPoints)).then(() => ({
-    id: i,
-    name: `Solution ${i + 1}`,
     distance: solution.objective,
     finishTime,
     violations,

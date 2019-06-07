@@ -27,7 +27,6 @@ export interface ITruck {
 }
 
 export interface IServedCustomer {
-  // customer to drive to or null to drive to depot
   customer: ICustomer | IDepot;
   arrivalTime: number;
   startOfService: number;
@@ -52,15 +51,11 @@ export interface ITruckRoute {
   route: IServedCustomer[];
 }
 
-export interface ISolution {
-  id: number;
-  name: string;
-  distance: number;
-  finishTime: number;
 
-  violations: string[];
-
-  trucks: ITruckRoute[];
+export interface IConstraints {
+  partialOrderConstraints: IOrderConstraint[];
+  lockedCustomers: ILockedCustomerConstraint[];
+  lockedTrucks: ILockedTruckConstraint[];
 }
 
 export interface IProblem {
@@ -69,8 +64,7 @@ export interface IProblem {
   depot: IDepot;
   distances: number[][];
   travelTimes: number[][];
-
-  orderConstraints: {from: ICustomer, to: ICustomer}[];
+  constraints: IConstraints;
 }
 
 export interface IServerSolution {
@@ -85,6 +79,24 @@ export interface IServerSolution {
 export interface IOrderConstraint {
   from: ICustomer | IDepot;
   to: ICustomer | IDepot;
+}
+
+export interface ILockedCustomerConstraint {
+  customer: ICustomer;
+  truck: ITruck;
+}
+
+export interface ILockedTruckConstraint {
+  truck: ITruck;
+  customers: (ICustomer | IDepot)[];
+}
+
+export interface ISolution {
+  // solution
+  distance: number;
+
+  finishTime: number;
+  trucks: ITruckRoute[];
 }
 
 export function isDepot(customer: ICustomer | IDepot): customer is IDepot {

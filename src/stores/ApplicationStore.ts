@@ -1,10 +1,10 @@
-import {observable, action, computed} from 'mobx';
+import {EStatus} from 'minizinc';
 import RESTMiniZinc from 'minizinc/build/RESTMiniZinc';
-import {IProblem, IOrderConstraint, IServerSolution, ISolution, ITruck, ICustomer} from '../model/interfaces';
-import problem, {problem2params} from '../model/problem';
-import model from 'raw-loader!../model/model.mzn';
+import {action, computed, observable} from 'mobx';
+import {ICustomer, IProblem, IServerSolution, ITruck} from '../model/interfaces';
 import parseSolution from '../model/parseSolution';
-import {buildOrderConstraint} from '../model/constraints';
+import problem from '../model/problem';
+import SolutionNode, {ESolutionNodeState} from '../model/SolutionNode';
 
 export interface IUIFlags {
   dummy: boolean;
@@ -13,83 +13,92 @@ export interface IUIFlags {
 export class ApplicationStore {
 
   private readonly backend = new RESTMiniZinc();
+  private solutionCounter = 0;
 
   @observable
   ui: IUIFlags = {
     dummy: false
   };
 
+  @observable
+  rootProblem: IProblem = problem;
 
   @observable
-  problem: IProblem = problem;
+  solutions: SolutionNode[] = [];
 
   @observable
-  orderConstraints: IOrderConstraint[] = [];
-
-  private solutionCounter = 0;
+  gallerySolutions: SolutionNode[] = [];
 
   @observable
-  solutions: ISolution[] = [];
-
+  leftSelectedSolution: SolutionNode | null = null;
   @observable
-  gallerySolutions: ISolution[] = [];
-
-  @observable
-  leftSelectedSolution: ISolution | null = null;
-  @observable
-  rightSelectedSolution: ISolution | null = null;
+  rightSelectedSolution: SolutionNode | null = null;
 
   @observable
   solving: boolean = false;
 
   @observable
-  hoveredSolution: ISolution | null = null;
+  hoveredSolution: SolutionNode | null = null;
   @observable
   hoveredTruck: ITruck | null = null;
   @observable
   hoveredCustomer: ICustomer | null = null;
 
   constructor() {
-    this.solve();
+    this.solveFresh();
   }
 
   @action
-  solve() {
-    const fullModel = model + this.extraConstraints.join('\n');
-
+  solve(node: SolutionNode) {
     this.solving = true;
-
+    node.state = ESolutionNodeState.SOLVING;
     this.backend.solve({
-      model: fullModel,
+      model: node.model,
       all_solutions: true
-    }, this.params).then((result) => {
-      const solutions = result.solutions.map((s) => (<IServerSolution><unknown>s.assignments));
-      Promise.all(solutions.map((s) => parseSolution(this.problem, s, this.solutionCounter++))).then((solutions) => {
+    }, node.params, {
+        onPartialResult: (type, result) => {
+          if (type !== 'solution') {
+            return;
+          }
+          // save solution state
+          const best = (<IServerSolution><unknown>result.solutions[result.solutions.length - 1].assignments);
+          parseSolution(node.problem, best).then((s) => {
+            node.pushSolution(s);
+          });
+        }
+      }).then((result) => {
+        if (result.status === EStatus.OPTIMAL_SOLUTION || result.status === EStatus.ALL_SOLUTIONS || result.status === EStatus.SATISFIED) {
+          node.state = ESolutionNodeState.SATISFIED;
+        } else {
+          node.state = ESolutionNodeState.UNSATISFIABLE;
+        }
+        if (result.solutions.length <= 0) {
+          return;
+        }
+        const best = (<IServerSolution><unknown>result.solutions[result.solutions.length - 1].assignments);
+        if (node.solution.distance === best.objective) {
+          return;
+        }
+        // has changed or no intermediate solutions
+        return parseSolution(node.problem, best).then((s) => {
+          node.pushSolution(s);
+        });
+      }).catch((error) => {
+        console.warn('error while computing solutions', error);
+        node.state = ESolutionNodeState.UNSATISFIABLE;
+      }).finally(() => {
         this.solving = false;
-        this.solutions.push(...solutions);
-        if (!this.leftSelectedSolution) {
-          this.leftSelectedSolution = this.solutions[0];
-        }
-        if (!this.rightSelectedSolution) {
-          this.rightSelectedSolution = this.solutions[1];
-        }
-      });
-    }).catch((error) => {
-      console.warn('error while computing solutions', error);
-      this.solving = false;
     });
   }
 
-  @computed
-  private get extraConstraints() {
-    return [
-      buildOrderConstraint(this.orderConstraints)
-    ];
-  }
-
-  @computed
-  private get params() {
-    return problem2params(this.problem);
+  @action
+  solveFresh() {
+    const node = new SolutionNode(this.solutionCounter++, this.rootProblem);
+    this.solutions.push(node);
+    if (!this.leftSelectedSolution) {
+      this.leftSelectedSolution = node;
+    }
+    return this.solve(node);
   }
 
   @computed

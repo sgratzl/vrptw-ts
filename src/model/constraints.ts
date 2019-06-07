@@ -1,4 +1,7 @@
-import {IOrderConstraint} from './interfaces';
+import {IOrderConstraint, IConstraints} from './interfaces';
+import model from 'raw-loader!../model/model.mzn';
+
+export const MODEL = model;
 
 export function buildOrderConstraint(constraints: IOrderConstraint[]) {
   if (constraints.length === 0) {
@@ -16,3 +19,10 @@ constraint forall (i, j in Customers) (
   endif
 )`;
 }
+
+
+export function constraints2code(constraints: IConstraints) {
+  // TODO so far just support for partial order ones
+  return buildOrderConstraint(constraints.partialOrderConstraints);
+}
+
