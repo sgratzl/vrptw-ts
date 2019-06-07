@@ -7,6 +7,7 @@ import SolutionRoute from './SolutionRoute';
 import {scaleLinear} from 'd3-scale';
 import classNames from 'classnames';
 import SolutionNode from '../model/SolutionNode';
+import SolutionStats from './SolutionStats';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -52,9 +53,10 @@ class GalleryItem extends React.Component<IGalleryItemProps> {
     return <div className={classNames(classes.root, {[classes.selected]: store.hoveredSolution === solution})}
       onMouseEnter={() => store.hoveredSolution = solution}
       onMouseLeave={() => store.hoveredSolution = null}
-      >
-      <SolutionRoute solution={solution} width={200} height={200} lat2y={lat2y} lng2x={lng2x}/>
+    >
       <Typography variant="caption" align="center">{solution.name}</Typography>
+      <SolutionRoute solution={solution} width={200} height={200} lat2y={lat2y} lng2x={lng2x} />
+      <SolutionStats solution={solution}/>
     </div>;
   }
 }

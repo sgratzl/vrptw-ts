@@ -3,7 +3,7 @@ import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import {scaleLinear} from 'd3';
-import {Typography} from '@material-ui/core';
+import {Typography, Tooltip} from '@material-ui/core';
 import classNames from 'classnames';
 import SolutionNode from '../model/SolutionNode';
 
@@ -33,7 +33,7 @@ const styles = (_theme: Theme) => createStyles({
 
 export interface ISolutionStatsProps extends WithStyles<typeof styles>, IWithStore {
   solution: SolutionNode;
-  orientation: 'left' | 'right';
+  orientation?: 'left' | 'right';
 }
 
 
@@ -46,12 +46,14 @@ class SolutionStats extends React.Component<ISolutionStatsProps> {
     const scale = scaleLinear().domain([0, store.maxDistance]).range([0, 100]);
 
     return <Typography className={classes.root} component="div">
-      <div className={classNames(classes.bar, {[classes.right]: orientation === 'right'})}>
-        {solution.trucks.map((truck) => <div key={truck.truck.id}
-          style={{backgroundColor: truck.truck.color, width: `${scale(truck.totalDistance)}%`}}
-          onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}
-          className={store.hoveredSolution === solution && store.hoveredTruck && store.hoveredTruck !== truck.truck ? classes.notSelected : undefined}
-        />)}
+      <div className={classNames(classes.bar, {[classes.right]: orientation !== 'left'})}>
+        {solution.trucks.map((truck) =>
+          <Tooltip key={truck.truck.id} title={`${truck.truck.name} (${Math.round(truck.totalDistance / 10) / 100} km)`} placement="top">
+            <div
+            style={{backgroundColor: truck.truck.color, width: `${scale(truck.totalDistance)}%`}}
+            onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}
+            className={store.hoveredSolution === solution && store.hoveredTruck && store.hoveredTruck !== truck.truck ? classes.notSelected : undefined}/>
+          </Tooltip>)}
       </div>
     </Typography>;
   }

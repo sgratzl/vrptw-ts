@@ -7,14 +7,13 @@ import Solution from './components/Solution';
 import Gallery from './components/Gallery';
 import SolutionHistory from './components/SolutionHistory';
 
-const styles = (theme: Theme) => createStyles({
+const styles = (_theme: Theme) => createStyles({
   root: {
     width: '100vw',
     height: '100vh',
     display: 'flex',
     flexDirection: 'column'
   },
-  appBarSpacer: theme.mixins.toolbar,
   main: {
     flex: '1 1 0',
     display: 'grid',
@@ -52,7 +51,6 @@ class App extends React.Component<IAppProps> {
           </Typography>
         </Toolbar>
       </AppBar>
-      <div className={classes.appBarSpacer} />
       <main className={classes.main}>
         <section className={classes.compare}>
           <Solution solution={store.leftSelectedSolution} orientation="left" />
