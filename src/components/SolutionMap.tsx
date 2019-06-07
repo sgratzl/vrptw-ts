@@ -99,6 +99,7 @@ class SolutionMapImpl extends React.Component<ISolutionMapProps, ISolutionMapImp
   }
 }
 
+
 @inject('store')
 @observer
 class SolutionMap extends React.Component<ISolutionMapProps> {

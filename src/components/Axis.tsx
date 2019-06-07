@@ -38,6 +38,16 @@ export interface IAxisProps extends WithStyles<typeof styles> {
   className?: string;
 }
 
+// class AxisSVG extends AUnmanagedSVGComponent<{scale: ScaleContinuousNumeric<any, any>, width: number, height: number}> {
+//   protected initSVG(svg: SVGSVGElement, initialProps: {scale: ScaleContinuousNumeric<any, any>, width: number, height: number}) {
+//     const axis = axisLeft(initialProps.scale.copy().domain([initialProps.height, 0]));
+//     select(svg).call(axis);
+
+//     return (props: {scale: ScaleContinuousNumeric<any, any>, width: number, height: number}) => {
+//       select(svg).call(axis.scale(props.scale.copy().domain([initialProps.height, 0])));
+//     };
+//   }
+// }
 
 class Axis extends React.Component<IAxisProps> {
   render() {
