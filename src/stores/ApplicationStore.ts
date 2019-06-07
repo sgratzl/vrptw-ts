@@ -7,7 +7,8 @@ import problem from '../model/problem';
 import SolutionNode, {ESolutionNodeState} from '../model/SolutionNode';
 
 export interface IUIFlags {
-  dummy: boolean;
+  visibleViolationAnchor: HTMLElement | null;
+  visibleViolationSolution: SolutionNode | null;
 }
 
 export class ApplicationStore {
@@ -17,7 +18,8 @@ export class ApplicationStore {
 
   @observable
   ui: IUIFlags = {
-    dummy: false
+    visibleViolationAnchor: null,
+    visibleViolationSolution: null
   };
 
   @observable

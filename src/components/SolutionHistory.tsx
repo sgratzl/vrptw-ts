@@ -92,7 +92,6 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
 
     const scale = scaleLinear().domain([0, store.maxDistance]).rangeRound([0, 100]);
 
-
     return <div className={classes.root}>
       <Axis scale={scale} className={classes.axis}/>
       <div className={classes.main}>

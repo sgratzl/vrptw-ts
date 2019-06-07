@@ -117,4 +117,9 @@ export default class SolutionNode implements IConstraints, ISolution {
   get trucks() {
     return this.solution.trucks;
   }
+
+  @computed
+  get valid() {
+    return this.violations.length === 0;
+  }
 }
