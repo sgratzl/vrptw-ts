@@ -7,7 +7,7 @@ import parseSolution from '../model/parseSolution';
 import {buildOrderConstraint} from '../model/constraints';
 
 export interface IUIFlags {
-
+  dummy: boolean;
 }
 
 export class ApplicationStore {
@@ -16,6 +16,7 @@ export class ApplicationStore {
 
   @observable
   ui: IUIFlags = {
+    dummy: false
   };
 
 

@@ -30,7 +30,7 @@ export default function computeRoute(x1: number, y1: number, x2: number, y2: num
       // }
     }
     // correct order
-    return wayPoints
+    return wayPoints;
   }).catch((error) => {
     console.error('error while computing route', error);
     // When the server is down, draw straight lines to directly connect two customers.
