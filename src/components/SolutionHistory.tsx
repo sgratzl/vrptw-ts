@@ -59,6 +59,12 @@ const styles = (_theme: Theme) => createStyles({
       textAnchor: 'end',
       dominantBaseline: 'central'
     }
+  },
+  adder: {
+    padding: '1rem',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center'
   }
 });
 
@@ -147,8 +153,8 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
           {(args) => <HistoryBarChart {...args} classes={classes}/>}
         </ContainerDimensions>
       </Typography>
-      <div>
-        <IconButton onClick={this.freshSolution}>
+      <div className={classes.adder}>
+        <IconButton onClick={this.freshSolution} color="primary">
           <AddIcon />
         </IconButton>
       </div>
