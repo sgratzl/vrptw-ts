@@ -14,7 +14,12 @@ import {toDistance} from '../utils';
 const styles = (_theme: Theme) => createStyles({
   root: {
     display: 'flex',
-
+    flexDirection: 'column',
+    padding: '0.5rem',
+    '& > main': {
+      flex: '1 1 0',
+      display: 'flex'
+    }
   },
   chart: {
     flex: '1 1 0',
@@ -120,7 +125,7 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
           <line y1={yscale.range()[0]} y2={yscale.range()[1]} />
           {yscale.ticks().map((s) => <g key={s} transform={`translate(0,${yscale(s)!})`} >
             <line x1={-3} />
-            <text x={-5}>{yscale.tickFormat()(s)}</text>
+            <text x={-5}>{toDistance(s)}</text>
           </g>)}
         </g>
       </svg>
@@ -137,7 +142,7 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
             onClick={() => this.onBarClick(s)}
           /></Tooltip>)}
         </div>
-        <svg width={width} height={bottom} className={classes.xaxis}>
+        <svg width={width - left} height={bottom} className={classes.xaxis}>
           <line x2={xscale.range()[1]} />
           {store.solutions.map((s, i) => <g key={s.id} transform={`translate(${start + (bandwidth + step) * i + bandwidth / 2}, 0)`} >
               <line y2={3} />
@@ -188,25 +193,21 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
     const classes = this.props.classes;
 
     return <div className={classNames(classes.root, this.props.className)}>
-      <Typography component="div" className={classes.chart}>
-        <ContainerDimensions>
-          {(args) => <HistoryBarChart {...args} classes={classes}/>}
-        </ContainerDimensions>
-      </Typography>
-      <div className={classes.adder}>
-        <IconButton onClick={this.freshSolution} color="primary">
-          <AddIcon />
-        </IconButton>
-      </div>
-      {/* <Axis scale={scale} className={classes.axis}/>
-      <div className={classes.main}>
-        {store.solutions.map((s) => <div
-          key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
-          title={s.name} data-distance={`${Math.round(s.distance / 100) / 10} km`} style={{height: `${scale(s.distance)}%`}}
-          onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
-          onClick={() => this.onBarClick(s)}
-        />)}
-      </div> */}
+      <Typography variant="h6">Solution History</Typography>
+      <main>
+        <Typography component="div" className={classes.chart}>
+          <ContainerDimensions>
+            {(args) => <HistoryBarChart {...args} classes={classes}/>}
+          </ContainerDimensions>
+        </Typography>
+        <div className={classes.adder}>
+          <Tooltip title="Compute New Solution">
+            <IconButton onClick={this.freshSolution} color="primary">
+              <AddIcon />
+            </IconButton>
+          </Tooltip>
+        </div>
+      </main>
     </div>;
   }
 }

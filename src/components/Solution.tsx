@@ -88,7 +88,7 @@ class Solution extends React.Component<ISolutionProps> {
             onMouseEnter={() => store.hoveredSolution = solution}
             onMouseLeave={() => store.hoveredSolution = null}>
       <div className={classes.header}>
-        <Typography variant="h6">{solution.name} (${toDistance(solution.distance)})</Typography>
+        <Typography variant="h6">{solution.name} ({toDistance(solution.distance)})</Typography>
         {solution.valid ? null : <React.Fragment>
           <Typography color="error" onClick={this.openViolationList}>{solution.violations.length} violations</Typography>
           <Popover anchorEl={store.ui.visibleViolationAnchor}

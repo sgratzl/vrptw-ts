@@ -17,22 +17,26 @@ const styles = (_theme: Theme) => createStyles({
   main: {
     flex: '1 1 0',
     display: 'grid',
-    flexDirection: 'column'
+    gridTemplateRows: `3fr 1fr`,
+    gridTemplateColumns: `3fr 3fr 1fr`,
+    gridTemplateAreas: `"left right gallery" "history history gallery"`,
+    gridGap: '0.5rem'
   },
-  compare: {
-    flex: '0 0 auto',
-    display: 'flex',
-    '& > *': {
-      flex: '1 1 0',
-      marginLeft: '1rem',
-      marginRight: '1rem'
-    }
+  left: {
+    minHeight: 0,
+    gridArea: 'left',
+  },
+  right: {
+    minHeight: 0,
+    gridArea: 'right',
   },
   history: {
-    flex: '0 0 8rem',
+    minHeight: 0,
+    gridArea: 'history',
   },
   gallery: {
-    flex: '0 0 auto',
+    minHeight: 0,
+    gridArea: 'gallery',
   }
 });
 
@@ -60,8 +64,8 @@ class App extends React.Component<IAppProps> {
         </Toolbar>
       </AppBar>
       <main className={classes.main}>
-        {store.leftSelectedSolution && <Solution solution={store.leftSelectedSolution} orientation="left" /> }
-        {store.rightSelectedSolution && <Solution solution={store.rightSelectedSolution} orientation="right" /> }
+        {store.leftSelectedSolution && <Solution solution={store.leftSelectedSolution} orientation="left" className={classes.left}/> }
+        {store.rightSelectedSolution && <Solution solution={store.rightSelectedSolution} orientation="right" className={classes.right} />}
         <SolutionHistory className={classes.history} />
         <Gallery className={classes.gallery}/>
       </main>

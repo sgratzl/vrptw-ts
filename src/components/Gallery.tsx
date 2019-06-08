@@ -4,13 +4,19 @@ import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import GalleryItem from './GalleryItem';
 import classNames from 'classnames';
+import {Typography} from '@material-ui/core';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
     position: 'relative',
-    overflow: 'auto'
+    overflow: 'auto',
+    borderLeft: '1px solid lightgray',
+    padding: '0.5rem',
+    display: 'flex',
+    flexDirection: 'column',
   },
   wrapper: {
+    flex: '1 1 0',
     display: 'flex',
     flexDirection: 'column',
     margin: '1rem'
@@ -32,7 +38,10 @@ class Gallery extends React.Component<IGalleryProps> {
     const store = this.props.store!;
 
     return <div className={classNames(classes.root, this.props.className)}>
-      {store.gallerySolutions.map((s) => <GalleryItem solution={s} key={s.id} />)}
+      <Typography variant="h6">Bookmarks</Typography>
+      <div className={classes.wrapper}>
+        {store.gallerySolutions.map((s) => <GalleryItem solution={s} key={s.id} />)}
+      </div>
     </div>;
   }
 }
