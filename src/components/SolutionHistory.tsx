@@ -6,9 +6,10 @@ import classNames from 'classnames';
 import {scaleLinear, scaleBand} from 'd3';
 import SolutionNode from '../model/SolutionNode';
 import ContainerDimensions from 'react-container-dimensions';
-import {IconButton, Typography} from '@material-ui/core';
+import {IconButton, Typography, Tooltip} from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import {bind} from 'decko';
+import {toDistance} from '../utils';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -107,31 +108,62 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
     const start = xscale.range()[0] + step;
 
 
-
-    return <svg width={width} height={height}>
-      <g>
-        {store.solutions.map((s, i) => <rect
-          key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
-          x={start + (bandwidth + step) * i} y={yscale(s.distance)} width={bandwidth} height={yscale.range()[0] - yscale(s.distance)}
-          onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
-          onClick={() => this.onBarClick(s)}
-        />)}
-      </g>
-      <g transform={`translate(${0},${yscale.range()[0]})`} className={classes.xaxis}>
-        <line x1={xscale.range()[0]} x2={xscale.range()[1]} />
-        {store.solutions.map((s, i) => <g key={s.id} transform={`translate(${start + (bandwidth + step) * i + bandwidth / 2}, 0)`} >
-            <line y2={3} />
-            <text y={5} >{s.name}</text>
-        </g>)}
-      </g>
-      <g transform={`translate(${xscale.range()[0]},0)`} className={classes.yaxis}>
+    return <article>
+      <svg width={50} height={height} className={classes.yaxis}>
         <line y1={yscale.range()[0]} y2={yscale.range()[1]} />
         {yscale.ticks().map((s) => <g key={s} transform={`translate(0,${yscale(s)!})`} >
           <line x1={-3} />
           <text x={-5}>{yscale.tickFormat()(s)}</text>
         </g>)}
-      </g>
-    </svg>;
+      </svg>
+      <main>
+        <div>
+          {store.solutions.map((s, i) => <Tooltip title={`${toDistance(s.distance)}`} placement="top"><div
+            key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
+            style={{
+              left: `${start + (bandwidth + step) * i}}px`,
+              width: `${bandwidth}px`,
+              height: `${yscale.range()[0] - yscale(s.distance)}px`
+            }}
+            onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
+            onClick={() => this.onBarClick(s)}
+          /></Tooltip>)}
+        </div>
+        <svg width={width} height={30} className={classes.xaxis}>
+          <line x1={xscale.range()[0]} x2={xscale.range()[1]} />
+          {store.solutions.map((s, i) => <g key={s.id} transform={`translate(${start + (bandwidth + step) * i + bandwidth / 2}, 0)`} >
+              <line y2={3} />
+              <text y={5} >{s.name}</text>
+          </g>)}
+        </svg>
+      </main>
+    </article>;
+
+
+    // return <svg width={width} height={height}>
+    //   <g>
+    //     {store.solutions.map((s, i) => <rect
+    //       key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
+    //       x={start + (bandwidth + step) * i} y={yscale(s.distance)} width={bandwidth} height={yscale.range()[0] - yscale(s.distance)}
+    //       onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
+    //       onClick={() => this.onBarClick(s)}
+    //     />)}
+    //   </g>
+    //   <g transform={`translate(${0},${yscale.range()[0]})`} className={classes.xaxis}>
+    //     <line x1={xscale.range()[0]} x2={xscale.range()[1]} />
+    //     {store.solutions.map((s, i) => <g key={s.id} transform={`translate(${start + (bandwidth + step) * i + bandwidth / 2}, 0)`} >
+    //         <line y2={3} />
+    //         <text y={5} >{s.name}</text>
+    //     </g>)}
+    //   </g>
+    //   <g transform={`translate(${xscale.range()[0]},0)`} className={classes.yaxis}>
+    //     <line y1={yscale.range()[0]} y2={yscale.range()[1]} />
+    //     {yscale.ticks().map((s) => <g key={s} transform={`translate(0,${yscale(s)!})`} >
+    //       <line x1={-3} />
+    //       <text x={-5}>{yscale.tickFormat()(s)}</text>
+    //     </g>)}
+    //   </g>
+    // </svg>;
   }
 }
 

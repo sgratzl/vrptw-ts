@@ -10,6 +10,7 @@ import SolutionStats from './SolutionStats';
 import SolutionNode from '../model/SolutionNode';
 import Error from '@material-ui/icons/Error';
 import {bind} from 'decko';
+import {toDistance} from '../utils';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -87,7 +88,7 @@ class Solution extends React.Component<ISolutionProps> {
             onMouseEnter={() => store.hoveredSolution = solution}
             onMouseLeave={() => store.hoveredSolution = null}>
       <div className={classes.header}>
-        <Typography variant="h6">{solution.name} ({Math.round(solution.distance / 10) / 100} km)</Typography>
+        <Typography variant="h6">{solution.name} (${toDistance(solution.distance)})</Typography>
         {solution.valid ? null : <React.Fragment>
           <Typography color="error" onClick={this.openViolationList}>{solution.violations.length} violations</Typography>
           <Popover anchorEl={store.ui.visibleViolationAnchor}

@@ -6,6 +6,7 @@ import {scaleLinear} from 'd3';
 import {Typography, Tooltip} from '@material-ui/core';
 import classNames from 'classnames';
 import SolutionNode from '../model/SolutionNode';
+import {toDistance} from '../utils';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -48,7 +49,7 @@ class SolutionStats extends React.Component<ISolutionStatsProps> {
     return <Typography className={classes.root} component="div">
       <div className={classNames(classes.bar, {[classes.right]: orientation !== 'left'})}>
         {solution.trucks.map((truck) =>
-          <Tooltip key={truck.truck.id} title={`${truck.truck.name} (${Math.round(truck.totalDistance / 10) / 100} km)`} placement="top">
+          <Tooltip key={truck.truck.id} title={`${truck.truck.name} (${toDistance(truck.totalDistance)})`} placement="top">
             <div
             style={{backgroundColor: truck.truck.color, width: `${scale(truck.totalDistance)}%`}}
             onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}

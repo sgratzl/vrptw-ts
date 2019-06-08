@@ -8,6 +8,7 @@ import {scaleLinear, scaleBand, line} from 'd3';
 import ContainerDimensions from 'react-container-dimensions';
 import classNames from 'classnames';
 import SolutionNode from '../model/SolutionNode';
+import {toDistance} from '../utils';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -127,7 +128,7 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
     const {truck, classes} = this.props;
     const store = this.props.store!;
     return <div className={classNames(classes.truck)} style={{flexGrow: truck.route.length}} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
-      <Typography>{truck.truck.name} ({Math.round(truck.totalDistance / 100) / 10 } km, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
+      <Typography>{truck.truck.name} ({toDistance(truck.totalDistance)}, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
       <div className={classes.route}>
       <ContainerDimensions>{(args) => <MareyTruckRoute {...args} {...this.props} />}</ContainerDimensions>
       </div>
