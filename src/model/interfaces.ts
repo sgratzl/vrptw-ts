@@ -35,9 +35,6 @@ export interface IServedCustomer {
   // distance to this customer
   distanceTo: number;
   timeTo: number;
-
-  // way points to drive to this customer
-  wayPointsTo: ILatLng[];
 }
 
 export interface ITruckRoute {
@@ -49,6 +46,9 @@ export interface ITruckRoute {
   finishTime: number;
 
   route: IServedCustomer[];
+
+  // way points of this route
+  wayPoints: ILatLng[];
 }
 
 

@@ -1,43 +1,49 @@
+import {ILatLng} from '../model/interfaces';
 
 const cache = new Map<string, any>();
 
-function callService(x1: number, y1: number, x2: number, y2: number) {
-  const url = `https://s-cah-mwallace.infotech.monash.edu/routing/route/v1/driving/${y1},${x1};${y2},${x2}?steps=true&overview=false&annotations=true`;
-  if (cache.has(url)) {
-    return Promise.resolve(cache.get(url));
+function callService(steps: string) {
+  if (cache.has(steps)) {
+    return Promise.resolve(cache.get(steps));
   }
+  const url = `https://s-cah-mwallace.infotech.monash.edu/routing/route/v1/driving/${steps}?steps=true&overview=false`;
   return fetch(url, {
     cache: 'force-cache'
   }).then((res) => res.json()).then((s) => {
-    cache.set(url, s);
+    cache.set(steps, s);
     return s;
   });
 }
 
-// ORDER: lng,lat
-export default function computeRoute(x1: number, y1: number, x2: number, y2: number): Promise<[number, number][]> {
-  return callService(x1, y1, x2, y2).then((information) => {
-    const steps = information.routes[0].legs[0].steps;
+export default function computeRoute(route: ILatLng[]): Promise<ILatLng[]> {
+  const steps = route.map((l) => `${l.lng},${l.lat}`).join(';');
+  return callService(steps).then((information) => {
     // console.log(steps);
-    const wayPoints: [number, number][] = [];
-    for (const step of steps) {
-      // Only consider the first and last intersections per step is good enough so that the drawing line is much smoother.
-      wayPoints.push(step.intersections[0].location);
-      wayPoints.push(step.intersections[step.intersections.length - 1].location);
-
-      // for (let j = 0; j < steps[i].intersections.length; j++) {
-      //  wayPoints.push(steps[i].intersections[j]);
-      // }
+    const wayPoints: ILatLng[] = [];
+    const push = (loc: [number, number]) => {
+      const l = ({lat: loc[1], lng: loc[0]});
+      if (wayPoints.length === 0) {
+        wayPoints.push(l);
+        return;
+      }
+      const last = wayPoints[wayPoints.length - 1];
+      if (last.lat === l.lat && last.lng === l.lng) {
+        return;
+      }
+      wayPoints.push(l);
+    };
+    for (const leg of information.routes[0].legs) {
+      for (const step of leg.steps) {
+        for (const intersection of step.intersections) {
+          push(intersection.location);
+        }
+      }
     }
-    // correct order
     return wayPoints;
   }).catch((error) => {
     console.error('error while computing route', error);
     // When the server is down, draw straight lines to directly connect two customers.
-    return [
-      [y1, x1],
-      [y2, x2]
-    ];
+    return route;
   });
 }
 
@@ -54,7 +60,8 @@ export function computeDistanceAndTimeMatrix(locationX: number[], locationY: num
           travelTime: 0
         };
       }
-      return callService(x1, y1, x2, y2).then((information) => {
+      const steps = `${y1},${x1};${y2},${x2}`;
+      return callService(steps).then((information) => {
         const distance = Math.round(information.distance);
         const travelTime = Math.round(information.duration / 60);
         return {distance, travelTime};

@@ -1,10 +1,8 @@
 import computeRoute from '../server/route';
-import {IProblem, IServedCustomer, IServerSolution, ITruckRoute, ILatLng, ISolution} from './interfaces';
+import {IProblem, IServerSolution, ITruckRoute, ISolution} from './interfaces';
 
 export default function parseSolution(problem: IProblem, solution: IServerSolution): Promise<ISolution> {
   const depot = problem.depot;
-
-  const servedCustomers: IServedCustomer[] = [];
 
   const trucks: ITruckRoute[] = problem.trucks.map((truck) => ({
     truck,
@@ -12,6 +10,7 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
     totalDistance: 0,
     startTime: 0,
     finishTime: 0,
+    wayPoints: [],
     route: []
   }));
   // since starting with 1
@@ -34,21 +33,10 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
       endOfService: startOfService + customer.serviceTime,
       departureTime: NaN, // computed after
       distanceTo: NaN, // computed later
-      timeTo: NaN,
-      wayPointsTo: [] // computed later
+      timeTo: NaN
     };
-    servedCustomers.push(servedCustomer);
     truck.route.push(servedCustomer);
   });
-
-  function computeWayPoints(from: ILatLng, to: ILatLng) {
-    // TODO real route async
-    // straight line
-    return [
-      {lat: from.lat, lng: from.lng},
-      {lat: to.lat, lng: to.lng}
-    ];
-  }
 
   let finishTime = 0;
 
@@ -83,22 +71,20 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
       to.distanceTo = distance;
       to.timeTo = travelTime;
       from.departureTime = to.arrivalTime - travelTime;
-      to.wayPointsTo = computeWayPoints(from.customer, to.customer);
       truck.totalDistance += distance;
     }
   }
 
-  return Promise.all(servedCustomers.filter((d) => d.wayPointsTo.length > 0).map(computeRouteWayPoints)).then(() => ({
+  return Promise.all(trucks.filter((d) => d.route.length > 0).map(computeRouteWayPoints)).then(() => ({
     distance: solution.objective,
     finishTime,
     trucks
   }));
 }
 
-function computeRouteWayPoints(servedCustomer: IServedCustomer) {
-  const line = servedCustomer.wayPointsTo;
-  return computeRoute(line[0].lat, line[0].lng, line[1].lat, line[1].lng).then((wayPoints) => {
-    servedCustomer.wayPointsTo = wayPoints.map((w) => ({lng: w[0], lat: w[1]}));
-    return servedCustomer;
+function computeRouteWayPoints(truck: ITruckRoute) {
+  return computeRoute(truck.route.map((t) => t.customer)).then((wayPoints) => {
+    truck.wayPoints = wayPoints;
+    return truck;
   });
 }

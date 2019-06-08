@@ -8,14 +8,13 @@ import classNames from 'classnames';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
-
-  },
-  customer: {
     '& path': {
       strokeOpacity: 0.5,
       strokeWidth: 3,
       fill: 'none'
     },
+  },
+  customer: {
     '& text': {
       fontFamily: _theme.typography.fontFamily,
       fontSize: '80%',
@@ -70,8 +69,8 @@ class SolutionTruckRoute extends React.Component<ISolutionTruckRouteProps> {
       .y((v) => lat2y(v.lat));
 
     return <g className={classNames({[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == null})}>
+      <path d={lineGen(truck.wayPoints)!} style={{stroke: truck.truck.color}} markerMid="url(#arrow)" markerEnd="url(#arrow)" />
       {truck.route.map((r, i) => <g key={`${r.customer.id}${i}`} className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer === r.customer})} onMouseEnter={() => store.hoveredCustomer = r.customer} onMouseLeave={() => store.hoveredCustomer = null}>
-        <path d={lineGen(r.wayPointsTo)!} style={{stroke: truck.truck.color}} />
         <g transform={`translate(${lng2x(r.customer.lng)},${lat2y(r.customer.lat)})`}>
           <circle style={{fill: truck.truck.color}} r="5" onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
             <title>{r.customer.name}</title>
@@ -91,6 +90,13 @@ class SolutionRoute extends React.Component<ISolutionRouteProps> {
     // const store = this.props.store!;
 
     return <svg className={classes.root} width={width} height={height}>
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
+          markerWidth="6" markerHeight="6"
+          orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" />
+      </marker>
+      </defs>
       {solution.trucks.map((truck) => <SolutionTruckRoute key={truck.truck.id} truck={truck} {...this.props} />)}
     </svg>;
   }
