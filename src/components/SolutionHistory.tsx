@@ -19,24 +19,27 @@ const styles = (_theme: Theme) => createStyles({
   chart: {
     flex: '1 1 0',
     position: 'relative',
-    '& > svg': {
+    '& > *': {
       position: 'absolute'
     }
   },
   main: {
-    flex: '1 1 0',
     display: 'flex',
-    position: 'relative',
-    alignItems: 'flex-end',
-    padding: '0 1rem',
-    borderBottom: '2px solid black',
+    '& > main': {
+      flex: '1 1 0',
+      display: 'flex',
+      flexDirection: 'column'
+    }
   },
-  axis: {
-    width: '5em',
+  content: {
+    flex: '1 1 0',
+    position: 'relative'
   },
   bar: {
-    fill: 'lightgrey',
+    background: 'lightgrey',
     cursor: 'pointer',
+    position: 'absolute',
+    bottom: 0
   },
   selected: {
     boxShadow: '0 0 5px 3px orange'
@@ -94,8 +97,11 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
     const {width, height, classes} = this.props;
     const store = this.props.store!;
 
-    const yscale = scaleLinear().domain([0, store.maxDistance]).rangeRound([height - 20, 20]);
-    const xscale = scaleBand().domain(store.solutions.map((d) => d.name)).range([80, width - 20]).padding(0.1);
+    const left = 80;
+    const bottom = 20;
+
+    const yscale = scaleLinear().domain([0, store.maxDistance]).rangeRound([height - bottom, 20]);
+    const xscale = scaleBand().domain(store.solutions.map((d) => d.name)).range([left, width - 20]).padding(0.1);
 
     let bandwidth = xscale.bandwidth();
     let step = xscale.step();
@@ -105,23 +111,25 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
       bandwidth = 50;
       step = 5;
     }
-    const start = xscale.range()[0] + step;
+    const start = step;
 
 
-    return <article>
-      <svg width={50} height={height} className={classes.yaxis}>
-        <line y1={yscale.range()[0]} y2={yscale.range()[1]} />
-        {yscale.ticks().map((s) => <g key={s} transform={`translate(0,${yscale(s)!})`} >
-          <line x1={-3} />
-          <text x={-5}>{yscale.tickFormat()(s)}</text>
-        </g>)}
+    return <article className={classes.main}>
+      <svg width={left} height={height} className={classes.yaxis}>
+        <g transform={`translate(${left},0)`}>
+          <line y1={yscale.range()[0]} y2={yscale.range()[1]} />
+          {yscale.ticks().map((s) => <g key={s} transform={`translate(0,${yscale(s)!})`} >
+            <line x1={-3} />
+            <text x={-5}>{yscale.tickFormat()(s)}</text>
+          </g>)}
+        </g>
       </svg>
       <main>
-        <div>
-          {store.solutions.map((s, i) => <Tooltip title={`${toDistance(s.distance)}`} placement="top"><div
+        <div className={classes.content}>
+          {store.solutions.map((s, i) => <Tooltip title={`${s.name} (${toDistance(s.distance)})`} placement="top"><div
             key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
             style={{
-              left: `${start + (bandwidth + step) * i}}px`,
+              left: `${start + (bandwidth + step) * i}px`,
               width: `${bandwidth}px`,
               height: `${yscale.range()[0] - yscale(s.distance)}px`
             }}
@@ -129,8 +137,8 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
             onClick={() => this.onBarClick(s)}
           /></Tooltip>)}
         </div>
-        <svg width={width} height={30} className={classes.xaxis}>
-          <line x1={xscale.range()[0]} x2={xscale.range()[1]} />
+        <svg width={width} height={bottom} className={classes.xaxis}>
+          <line x2={xscale.range()[1]} />
           {store.solutions.map((s, i) => <g key={s.id} transform={`translate(${start + (bandwidth + step) * i + bandwidth / 2}, 0)`} >
               <line y2={3} />
               <text y={5} >{s.name}</text>

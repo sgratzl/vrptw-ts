@@ -7,7 +7,12 @@ import classNames from 'classnames';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
+    position: 'relative',
+    overflow: 'auto'
+  },
+  wrapper: {
     display: 'flex',
+    flexDirection: 'column',
     margin: '1rem'
   }
 });

@@ -16,7 +16,7 @@ const styles = (_theme: Theme) => createStyles({
   },
   main: {
     flex: '1 1 0',
-    display: 'flex',
+    display: 'grid',
     flexDirection: 'column'
   },
   compare: {
@@ -55,15 +55,13 @@ class App extends React.Component<IAppProps> {
       <AppBar position="static" color="default">
         <Toolbar>
           <Typography variant="h6" color="inherit">
-            VRPTW
+            Vechicle Routing Problem
           </Typography>
         </Toolbar>
       </AppBar>
       <main className={classes.main}>
-        <section className={classes.compare}>
-          <Solution solution={store.leftSelectedSolution} orientation="left" />
-          <Solution solution={store.rightSelectedSolution} orientation="right" />
-        </section>
+        {store.leftSelectedSolution && <Solution solution={store.leftSelectedSolution} orientation="left" /> }
+        {store.rightSelectedSolution && <Solution solution={store.rightSelectedSolution} orientation="right" /> }
         <SolutionHistory className={classes.history} />
         <Gallery className={classes.gallery}/>
       </main>
