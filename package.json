@@ -99,6 +99,7 @@
     "@types/d3": "^5.7.2",
     "@types/leaflet": "^1.4.4",
     "@types/react": "^16.8.19",
+    "@types/react-dnd-html5-backend": "^3.0.2",
     "@types/react-dom": "^16.8.4",
     "classnames": "^2.2.6",
     "d3": "^5.9.2",
@@ -110,6 +111,8 @@
     "react": "^16.8.6",
     "react-async-component": "^2.0.0",
     "react-container-dimensions": "^1.4.1",
+    "react-dnd": "^7.6.0",
+    "react-dnd-html5-backend": "^7.6.0",
     "react-dom": "^16.8.6",
     "typeface-roboto": "0.0.54"
   }

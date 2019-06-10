@@ -2,7 +2,7 @@ import React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {ITruckRoute, isDepot} from '../model/interfaces';
+import {ITruckRoute, isDepot, IServedCustomer} from '../model/interfaces';
 import {Typography, Badge, Tooltip, Toolbar, IconButton} from '@material-ui/core';
 import {scaleLinear, scaleBand, line, scaleTime, timeMinute} from 'd3';
 import ContainerDimensions from 'react-container-dimensions';
@@ -12,6 +12,7 @@ import {toDistance} from '../utils';
 import Home from '@material-ui/icons/Home';
 import Lock from '@material-ui/icons/Lock';
 import LockOpen from '@material-ui/icons/LockOpen';
+import {ConnectDropTarget, DropTarget, DropTargetCollector, DropTargetSpec, ConnectDragSource, DragSourceSpec, DragSourceCollector, DragSource} from 'react-dnd';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -124,6 +125,105 @@ interface IMareyTruckRouteProps extends IMareyTruckProps {
   height: number;
 }
 
+interface IDropProps {
+  connectDropTarget?: ConnectDropTarget;
+  isOver?: boolean;
+  canDrop?: boolean;
+}
+
+interface IDragProps {
+  connectDragSource?: ConnectDragSource;
+  isDragging?: boolean;
+}
+
+interface IMareyTruckCustomerProps extends IMareyTruckProps, IDropProps, IDragProps {
+  i: number;
+  route: IServedCustomer;
+  xscale(v: number): number;
+  yscale(v: string): number | undefined;
+
+}
+
+const squareTarget: DropTargetSpec<IMareyTruckCustomerProps> = {
+  canDrop(_props) {
+      return true; //props.game.canMoveKnight(props.x, props.y);
+  },
+  drop(_props) {
+    //props.game.moveKnight(props.x, props.y);
+  }
+};
+
+const collect: DropTargetCollector<IDropProps, IMareyTruckCustomerProps> = (connect, monitor) => {
+  return {
+    connectDropTarget: connect.dropTarget(),
+    isOver: monitor.isOver(),
+    canDrop: monitor.canDrop()
+  };
+};
+
+const knightSource: DragSourceSpec<IMareyTruckCustomerProps, {}> = {
+  beginDrag(_props) {
+    return {};
+  }
+};
+
+const collectSource: DragSourceCollector<IDragProps, IMareyTruckCustomerProps> = (connect, monitor) => {
+  return {
+    connectDragSource: connect.dragSource(),
+    isDragging: monitor.isDragging()
+  };
+};
+
+@DropTarget('customer', squareTarget, collect)
+@DragSource('customer', knightSource, collectSource)
+@inject('store')
+@observer
+class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
+  render(): React.ReactNode {
+    const {route, truck, classes, xscale, yscale, solution, i} = this.props;
+    const store = this.props.store!;
+
+    if (isDepot(route.customer)) {
+      return <div
+        className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
+        onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
+        style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
+        <Typography className={classes.label}><Home /></Typography>
+        <div className={classes.timeline}></div>
+      </div>;
+    }
+    const windowStart = xscale(route.customer.startTime);
+    const windowEnd = xscale(route.customer.endTime);
+    const serviceStart = xscale(route.startOfService);
+    const serviceEnd = xscale(route.endOfService);
+
+    const isLocked = solution.isCustomerLocked(truck.truck, route.customer);
+
+
+
+    // const [collectedProps, drag] = useDrag({
+    //   item: {
+    //     id: ,
+    //     type
+    //   },
+    // });
+
+    return this.props.connectDragSource!(<div
+      className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
+      onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
+      style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
+      <Tooltip title={isLocked ? `Customer ${route.customer.name} has to be served by ${truck.truck.name} - Click to unlock` : `Click to force customer ${route.customer.name} to be served by ${truck.truck.name}`}>
+        <Badge badgeContent={<Lock fontSize="small" onClick={() => store.toggleCustomerLocked(solution, truck.truck, route.customer)} />} invisible={!isLocked}>
+          <Typography className={classes.label} onClick={() => store.toggleCustomerLocked(solution, truck.truck, route.customer)}>{route.customer.name}</Typography>
+        </Badge>
+      </Tooltip>
+      <div className={classes.timeline}></div>
+      <div className={classes.window} style={{transform: `translate(${windowStart}px,0)`, width: `${windowEnd - windowStart}px`}} />
+      <div className={classes.service} style={{transform: `translate(${serviceStart}px,0)`, width: `${serviceEnd - serviceStart}px`, background: truck.truck.color}}/>
+    </div>);
+  }
+}
+
 @inject('store')
 @observer
 class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
@@ -150,37 +250,7 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
     };
 
     return <React.Fragment>
-      {truck.route.map((route, i) => {
-        if (isDepot(route.customer)) {
-          return <div key={i === 0 ? -1 : route.customer.id}
-            className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
-            onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
-            style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
-            <Typography className={classes.label}><Home /></Typography>
-            <div className={classes.timeline}></div>
-          </div>;
-        }
-        const windowStart = xscale(route.customer.startTime);
-        const windowEnd = xscale(route.customer.endTime);
-        const serviceStart = xscale(route.startOfService);
-        const serviceEnd = xscale(route.endOfService);
-
-        const isLocked = solution.isCustomerLocked(truck.truck, route.customer);
-
-        return <div key={route.customer.id}
-          className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
-          onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
-          style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
-          <Tooltip title={isLocked ? `Customer ${route.customer.name} has to be served by ${truck.truck.name} - Click to unlock` : `Click to force customer ${route.customer.name} to be served by ${truck.truck.name}`}>
-            <Badge badgeContent={<Lock fontSize="small" onClick={() => store.toggleCustomerLocked(solution, truck.truck, route.customer)} />} invisible={!isLocked}>
-              <Typography className={classes.label} onClick={() => store.toggleCustomerLocked(solution, truck.truck, route.customer)}>{route.customer.name}</Typography>
-            </Badge>
-          </Tooltip>
-          <div className={classes.timeline}></div>
-          <div className={classes.window} style={{transform: `translate(${windowStart}px,0)`, width: `${windowEnd - windowStart}px`}} />
-          <div className={classes.service} style={{transform: `translate(${serviceStart}px,0)`, width: `${serviceEnd - serviceStart}px`, background: truck.truck.color}}/>
-        </div>;
-      })}
+      {truck.route.map((route, i) => <MareyServedCustomer key={i === 0 ? -1 : route.customer.id} i={i} route={route} xscale={xscale} yscale={yscale} {...this.props}/>)}
       <svg width={width} height={height} className={classes.truckRoute}>
         <path d={genPath()!} className={classNames(classes.effective, {[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == null})} style={{stroke: truck.truck.color}}/>
       </svg>
