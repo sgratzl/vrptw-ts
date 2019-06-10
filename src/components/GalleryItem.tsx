@@ -10,7 +10,9 @@ import SolutionNode from '../model/SolutionNode';
 import SolutionStats from './SolutionStats';
 import {toDistance} from '../utils';
 import SolutionState from './SolutionState';
+import Close from '@material-ui/icons/Close';
 import Bookmark from '@material-ui/icons/Bookmark';
+import BookmarkBorder from '@material-ui/icons/BookmarkBorder';
 import CenterFocusStrong from '@material-ui/icons/CenterFocusStrong';
 import CenterFocusWeak from '@material-ui/icons/CenterFocusWeak';
 
@@ -36,6 +38,7 @@ const styles = (_theme: Theme) => createStyles({
 
 export interface IGalleryItemProps extends WithStyles<typeof styles>, IWithStore {
   solution: SolutionNode;
+  asPreview?: boolean;
 }
 
 // from Leaflet map.getBounds()
@@ -55,9 +58,8 @@ const VISIBLE_BOUNDS = {
 @observer
 class GalleryItem extends React.Component<IGalleryItemProps> {
   render() {
-    const classes = this.props.classes;
+    const {classes, solution, asPreview} = this.props;
     const store = this.props.store!;
-    const solution = this.props.solution;
 
 
     const lat2y = scaleLinear().domain([VISIBLE_BOUNDS._southWest.lat, VISIBLE_BOUNDS._northEast.lat]).range([200, 0]);
@@ -83,11 +85,16 @@ class GalleryItem extends React.Component<IGalleryItemProps> {
             <Badge badgeContent="R" color={isRight ? 'secondary' : 'default'}>
               {isRight ? <CenterFocusStrong /> : <CenterFocusWeak />}
             </Badge>
-          </IconButton>
-        <IconButton onClick={() => store.toggleInGallery(solution)}><Bookmark/></IconButton>
+        </IconButton>
+        {asPreview ? <React.Fragment>
+          <IconButton onClick={() => store.toggleInGallery(solution)}>{store.isInGallery(solution) ? <Bookmark/> : <BookmarkBorder/>}</IconButton>
+          <IconButton onClick={() => store.ui.visibleHistoryAnchor = null}><Close/></IconButton>
+        </React.Fragment> :
+          <IconButton onClick={() => store.toggleInGallery(solution)}><Close/></IconButton>
+        }
 
       </Toolbar>
-      <SolutionRoute solution={solution} width={200} height={200} lat2y={lat2y} lng2x={lng2x} />
+      <SolutionRoute solution={solution} width={250} height={200} lat2y={lat2y} lng2x={lng2x} />
       <SolutionStats solution={solution}/>
     </div>;
   }

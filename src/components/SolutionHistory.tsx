@@ -223,7 +223,7 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
           vertical: 'bottom',
           horizontal: 'right',
         }}>
-        <GalleryItem solution={store.ui.visibleHistorySolution!} />
+        <GalleryItem solution={store.ui.visibleHistorySolution!} asPreview />
       </Popover>}
     </div>;
   }

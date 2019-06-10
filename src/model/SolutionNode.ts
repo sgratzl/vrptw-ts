@@ -168,4 +168,10 @@ export default class SolutionNode implements IConstraints, ISolution {
     return this.lockedCustomers.length + this.lockedTrucks.length + this.partialOrderConstraints.length;
   }
 
+  @computed
+  get hash() {
+    // unique solution per route of all trucks
+    return JSON.stringify(this.trucks.map((d) => d.route.map((d) => d.customer.id)));
+  }
+
 }
