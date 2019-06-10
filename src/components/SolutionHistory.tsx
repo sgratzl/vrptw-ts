@@ -55,6 +55,7 @@ const styles = (_theme: Theme) => createStyles({
       strokeWidth: 2
     },
     '& text': {
+      fontSize: 'small',
       textAnchor: 'middle',
       dominantBaseline: 'hanging'
     }
@@ -65,6 +66,7 @@ const styles = (_theme: Theme) => createStyles({
       strokeWidth: 2
     },
     '& text': {
+      fontSize: 'small',
       textAnchor: 'end',
       dominantBaseline: 'central'
     }

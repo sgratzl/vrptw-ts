@@ -19,7 +19,7 @@ const styles = (_theme: Theme) => createStyles({
     flex: '1 1 0',
     display: 'flex',
     flexDirection: 'column',
-    margin: '1rem'
+    margin: '0.25rem'
   }
 });
 
