@@ -104,6 +104,9 @@ export class ApplicationStore {
     if (!this.leftSelectedSolution) {
       this.leftSelectedSolution = node;
     }
+    if (this.gallerySolutions.length === 0) {
+      this.gallerySolutions.push(node);
+    }
     return this.solve(node);
   }
 

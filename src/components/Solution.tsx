@@ -11,6 +11,7 @@ import SolutionNode from '../model/SolutionNode';
 import Error from '@material-ui/icons/Error';
 import Bookmark from '@material-ui/icons/Bookmark';
 import BookmarkBorder from '@material-ui/icons/BookmarkBorder';
+import Close from '@material-ui/icons/Close';
 import {bind} from 'decko';
 import {toDistance} from '../utils';
 import SolutionState from './SolutionState';
@@ -118,8 +119,9 @@ class Solution extends React.Component<ISolutionProps> {
               )}
           </List>
           </Popover>
-          </React.Fragment>
+        </React.Fragment>
         }
+        <IconButton onClick={() => orientation === 'left' ? store.leftSelectedSolution = null : store.rightSelectedSolution = null}><Close/></IconButton>
       </Toolbar>
       <div className={classNames(classes.main, {[classes.right]: orientation === 'right'})}>
         <MareyChart solution={solution} />
