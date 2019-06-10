@@ -2,12 +2,12 @@ import React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {ISolution} from '../model/interfaces';
 import {bind} from 'decko';
 import SolutionRoute from './SolutionRoute';
 import {map, tileLayer, Map} from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import ContainerDimensions from 'react-container-dimensions';
+import SolutionNode from '../model/SolutionNode';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -27,7 +27,7 @@ const styles = (_theme: Theme) => createStyles({
 
 
 export interface ISolutionMapProps extends WithStyles<typeof styles>, IWithStore {
-  solution: ISolution;
+  solution: SolutionNode;
 }
 
 interface ISolutionMapImplState {

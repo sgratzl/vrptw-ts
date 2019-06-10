@@ -4,11 +4,12 @@ import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import {ITruckRoute, isDepot} from '../model/interfaces';
 import {Typography} from '@material-ui/core';
-import {scaleLinear, scaleBand, line} from 'd3';
+import {scaleLinear, scaleBand, line, scaleTime, timeMinute} from 'd3';
 import ContainerDimensions from 'react-container-dimensions';
 import classNames from 'classnames';
 import SolutionNode from '../model/SolutionNode';
 import {toDistance} from '../utils';
+import Home from '@material-ui/icons/Home';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -22,43 +23,75 @@ const styles = (_theme: Theme) => createStyles({
   },
   route: {
     flex: '1 1 0',
-    position: 'relative',
-    '& path,line': {
-      strokeLinecap: 'round',
-      strokeLinejoin: 'round'
-    },
-    '& svg': {
-      position: 'absolute'
-    },
-    '& text': {
-      dominantBaseline: 'hanging'
-    }
+    position: 'relative'
   },
   customer: {
-    pointerEvents: 'all'
+    position: 'absolute',
+    display: 'flex',
+    width: '100%',
+    alignItems: 'center'
   },
-  window: {
-    stroke: 'lightgray',
-    strokeWidth: 10
-  },
-  service: {
-    strokeWidth: 8
+  truckRoute: {
+    pointerEvents: 'none',
+    position: 'absolute'
   },
   effective: {
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
     fill: 'none',
     strokeOpacity: 0.5,
     strokeWidth: 8
   },
+
+  timeline: {
+    flex: '1 1 0',
+    background: 'black',
+    height: 1
+  },
+  label: {
+    textAlign: 'center',
+    width: 25
+  },
+  window: {
+    position: 'absolute',
+    background: 'lightgray',
+    borderRadius: 5,
+    height: 10
+  },
+  service: {
+    position: 'absolute',
+    borderRadius: 5,
+    height: 8
+  },
+
+
   selected: {
     strokeOpacity: 1,
     strokeWidth: 10
   },
-  timeline: {
-    stroke: 'black',
-    strokeWidth: 1
-  },
   selectedC: {
-    strokeWidth: 2
+    '& > $label': {
+      fontWeight: 'bold',
+    },
+    '& > $timeline': {
+      height: 3
+    }
+  },
+
+  timelineaxis: {
+    height: 20,
+
+    '& > svg': {
+      position: 'absolute'
+    },
+    '& line': {
+      stroke: 'black',
+      strokeWidth: 2
+    },
+    '& text': {
+      textAnchor: 'middle',
+      dominantBaseline: 'hanging'
+    }
   }
 });
 
@@ -103,20 +136,36 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
       return line<[number, number]>().x((v) => xscale(v[0]))(points);
     };
 
-    return <svg width={width} height={height}>
+    return <React.Fragment>
       {truck.route.map((route, i) => {
-        const depot = isDepot(route.customer);
-        return <g key={i === 0 ? -1 : route.customer.id}
-          className={classes.customer} onMouseOver={() => store.hoveredCustomer === route.customer} onMouseOut={() => store.hoveredCustomer = null}
-          transform={`translate(0, ${yscale(i.toString())})`}>
-          {depot ? <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" transform="translate(-2,0)scale(0.6)" /> : <text>{route.customer.name}</text>}
-          <line className={classNames(classes.timeline, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer === route.customer})} x1={xscale(0)} y1={center} x2={xscale(store.maxFinishTime)} y2={center} />
-          {!depot && <line className={classes.window} x1={xscale(route.customer.startTime)} y1={center} x2={xscale(route.customer.endTime)} y2={center} />}
-          {!depot && <line className={classes.service} x1={xscale(route.startOfService)} y1={center} x2={xscale(route.endOfService)} y2={center} style={{stroke: truck.truck.color}}/>}
-        </g>;
+        if (isDepot(route.customer)) {
+          return <div key={i === 0 ? -1 : route.customer.id}
+            className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
+            onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
+            style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
+            <Typography className={classes.label}><Home /></Typography>
+            <div className={classes.timeline}></div>
+          </div>;
+        }
+        const windowStart = xscale(route.customer.startTime);
+        const windowEnd = xscale(route.customer.endTime);
+        const serviceStart = xscale(route.startOfService);
+        const serviceEnd = xscale(route.endOfService);
+
+        return <div key={route.customer.id}
+          className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
+          onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
+          style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
+          <Typography className={classes.label}>{route.customer.name}</Typography>
+          <div className={classes.timeline}></div>
+          <div className={classes.window} style={{transform: `translate(${windowStart}px,0)`, width: `${windowEnd - windowStart}px`}} />
+          <div className={classes.service} style={{transform: `translate(${serviceStart}px,0)`, width: `${serviceEnd - serviceStart}px`, background: truck.truck.color}}/>
+        </div>;
       })}
-      <path d={genPath()!} className={classNames(classes.effective, {[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == null})} style={{stroke: truck.truck.color}}/>
-    </svg>;
+      <svg width={width} height={height} className={classes.truckRoute}>
+        <path d={genPath()!} className={classNames(classes.effective, {[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == null})} style={{stroke: truck.truck.color}}/>
+      </svg>
+    </React.Fragment>;
   }
 }
 
@@ -138,13 +187,37 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
 
 @inject('store')
 @observer
+class TimelineAxis extends React.Component<WithStyles<typeof styles> & IWithStore & {width: number, height: number}> {
+
+  render() {
+    const {width, height} = this.props;
+    const store = this.props.store!;
+    const base = new Date(2018, 1, 1, 8, 0, 0, 0);
+    const xscale = scaleTime().domain([base, timeMinute.offset(base, store.maxFinishTime)]).range([25, width - 5]).clamp(true);
+    const format = xscale.tickFormat(8);
+
+    return <svg width={width} height={height}>
+      <line x1={xscale.range()[0]} x2={xscale.range()[1]} />
+      {xscale.ticks(8).map((t) => <g key={t.toString()} transform={`translate(${xscale(t)}, 0)`} >
+          <line y2={3} />
+          <text y={5} >{format(t)}</text>
+      </g>)}
+    </svg>;
+  }
+}
+
+@inject('store')
+@observer
 class MareyChart extends React.Component<IMareyChartProps> {
   render() {
     const {solution, classes} = this.props;
     // const store = this.props.store!;
 
     return <div className={classes.root}>
-      {solution.trucks.map((truck) => <MareyTruck key={truck.truck.id} truck={truck} classes={classes} solution={solution}/>)}
+      {solution.trucks.map((truck) => <MareyTruck key={truck.truck.id} truck={truck} classes={classes} solution={solution} />)}
+      <div className={classNames(classes.timelineaxis)}>
+        <ContainerDimensions>{(args) => <TimelineAxis classes={classes} {...args}/>}</ContainerDimensions>
+      </div>
     </div>;
   }
 }
