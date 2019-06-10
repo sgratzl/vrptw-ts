@@ -3,13 +3,14 @@ import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import {ITruckRoute, isDepot} from '../model/interfaces';
-import {Typography} from '@material-ui/core';
+import {Typography, Badge, Tooltip} from '@material-ui/core';
 import {scaleLinear, scaleBand, line, scaleTime, timeMinute} from 'd3';
 import ContainerDimensions from 'react-container-dimensions';
 import classNames from 'classnames';
 import SolutionNode from '../model/SolutionNode';
 import {toDistance} from '../utils';
 import Home from '@material-ui/icons/Home';
+import Lock from '@material-ui/icons/Lock';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -49,6 +50,7 @@ const styles = (_theme: Theme) => createStyles({
     height: 1
   },
   label: {
+    cursor: 'pointer',
     textAlign: 'center',
     width: 25
   },
@@ -70,7 +72,7 @@ const styles = (_theme: Theme) => createStyles({
     strokeWidth: 10
   },
   selectedC: {
-    '& > $label': {
+    '& $label': {
       fontWeight: 'bold',
     },
     '& > $timeline': {
@@ -152,11 +154,17 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
         const serviceStart = xscale(route.startOfService);
         const serviceEnd = xscale(route.endOfService);
 
+        const isLocked = solution.isCustomerLocked(truck.truck, route.customer);
+
         return <div key={route.customer.id}
           className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
           onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
           style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
-          <Typography className={classes.label}>{route.customer.name}</Typography>
+          <Tooltip title={isLocked ? `Customer ${route.customer.name} has to be served by ${truck.truck.name} - Click to unlock` : `Click to force customer ${route.customer.name} to be served by ${truck.truck.name}`}>
+            <Badge badgeContent={<Lock fontSize="small" onClick={() => solution.toggleCustomerLocked(truck.truck, route.customer)} />} invisible={!isLocked}>
+              <Typography className={classes.label} onClick={() => solution.toggleCustomerLocked(truck.truck, route.customer)}>{route.customer.name}</Typography>
+            </Badge>
+          </Tooltip>
           <div className={classes.timeline}></div>
           <div className={classes.window} style={{transform: `translate(${windowStart}px,0)`, width: `${windowEnd - windowStart}px`}} />
           <div className={classes.service} style={{transform: `translate(${serviceStart}px,0)`, width: `${serviceEnd - serviceStart}px`, background: truck.truck.color}}/>

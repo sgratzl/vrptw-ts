@@ -1,4 +1,4 @@
-import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, ILockedTruckConstraint, IProblem, isDepot} from './interfaces';
+import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, ILockedTruckConstraint, IProblem, isDepot, ICustomer, ITruck} from './interfaces';
 import {observable, computed, action} from 'mobx';
 import {problem2params} from './problem';
 import {MODEL, constraints2code, checkConstraints} from './constraints';
@@ -71,7 +71,7 @@ export default class SolutionNode implements IConstraints, ISolution {
     this.solution = solution;
     this.partialResultDistances.push(solution.distance);
 
-    this.violations = this.checkViolations();
+    this.checkViolations();
   }
 
   private checkViolations() {
@@ -100,7 +100,7 @@ export default class SolutionNode implements IConstraints, ISolution {
     violations.push(...checkConstraints(this.solution, this.problem));
     violations.push(...checkConstraints(this.solution, this));
 
-    return violations;
+    this.violations = violations;
   }
 
   @computed
@@ -122,4 +122,28 @@ export default class SolutionNode implements IConstraints, ISolution {
   get valid() {
     return this.violations.length === 0;
   }
+
+  isCustomerLocked(truck: ITruck, customer: ICustomer) {
+    if (isDepot(customer)) {
+      return false;
+    }
+    return this.lockedCustomers.find((d) => d.truck === truck && d.customer === customer);
+  }
+
+  @action
+  toggleCustomerLocked(truck: ITruck, customer: ICustomer) {
+    if (isDepot(customer)) {
+      return;
+    }
+    const index = this.lockedCustomers.findIndex((d) => d.truck === truck && d.customer === customer);
+    // TODO need to fork?
+    if (index >= 0) {
+      this.lockedCustomers.splice(index, 1);
+    } else {
+      this.lockedCustomers.push({truck, customer});
+    }
+
+    this.checkViolations();
+  }
+
 }
