@@ -163,4 +163,9 @@ export default class SolutionNode implements IConstraints, ISolution {
     this.checkViolations();
   }
 
+  @computed
+  get customConstraints() {
+    return this.lockedCustomers.length + this.lockedTrucks.length + this.partialOrderConstraints.length;
+  }
+
 }

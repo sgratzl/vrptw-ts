@@ -172,8 +172,8 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
           onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
           style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
           <Tooltip title={isLocked ? `Customer ${route.customer.name} has to be served by ${truck.truck.name} - Click to unlock` : `Click to force customer ${route.customer.name} to be served by ${truck.truck.name}`}>
-            <Badge badgeContent={<Lock fontSize="small" onClick={() => solution.toggleCustomerLocked(truck.truck, route.customer)} />} invisible={!isLocked}>
-              <Typography className={classes.label} onClick={() => solution.toggleCustomerLocked(truck.truck, route.customer)}>{route.customer.name}</Typography>
+            <Badge badgeContent={<Lock fontSize="small" onClick={() => store.toggleCustomerLocked(solution, truck.truck, route.customer)} />} invisible={!isLocked}>
+              <Typography className={classes.label} onClick={() => store.toggleCustomerLocked(solution, truck.truck, route.customer)}>{route.customer.name}</Typography>
             </Badge>
           </Tooltip>
           <div className={classes.timeline}></div>
@@ -199,7 +199,7 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
     return <div className={classNames(classes.truck, {[classes.locked]: isLocked})} style={{flexGrow: truck.route.length}} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
       <Toolbar disableGutters variant="dense">
         <Typography>{truck.truck.name} ({toDistance(truck.totalDistance)}, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
-        <IconButton onClick={() => solution.toggleTruckLocked(truck)} title={isLocked ? `The route of ${truck.truck.name} is locked - Click to unlock` : `Click to lock the route of truck ${truck.truck.name}`}>
+        <IconButton onClick={() => store.toggleTruckLocked(solution, truck)} title={isLocked ? `The route of ${truck.truck.name} is locked - Click to unlock` : `Click to lock the route of truck ${truck.truck.name}`}>
           {isLocked ? <Lock /> : <LockOpen />}
         </IconButton>
       </Toolbar>

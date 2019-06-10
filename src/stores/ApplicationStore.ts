@@ -1,7 +1,7 @@
 import {EStatus} from 'minizinc';
 import RESTMiniZinc from 'minizinc/build/RESTMiniZinc';
 import {action, computed, observable} from 'mobx';
-import {ICustomer, IProblem, IServerSolution, ITruck} from '../model/interfaces';
+import {ICustomer, IProblem, IServerSolution, ITruck, ITruckRoute} from '../model/interfaces';
 import parseSolution from '../model/parseSolution';
 import problem from '../model/problem';
 import SolutionNode, {ESolutionNodeState} from '../model/SolutionNode';
@@ -112,4 +112,42 @@ export class ApplicationStore {
   get maxFinishTime() {
     return this.solutions.reduce((acc, s) => Math.max(acc, s.finishTime), 0);
   }
+
+  @action
+  private fork(solution: SolutionNode) {
+    const fork = new SolutionNode(this.solutionCounter++, solution.problem, solution);
+    this.solutions.push(fork);
+    // in place replacement
+    if (this.leftSelectedSolution === solution) {
+      this.leftSelectedSolution = fork;
+    }
+    if (this.rightSelectedSolution === solution) {
+      this.rightSelectedSolution = fork;
+    }
+    if (this.hoveredSolution === solution) {
+      this.hoveredSolution = fork;
+    }
+    const galleryIndex = this.gallerySolutions.indexOf(solution);
+    if (galleryIndex >= 0) {
+      this.gallerySolutions.splice(galleryIndex, 1, fork);
+    }
+    return fork;
+  }
+
+  @action
+  toggleCustomerLocked(solution: SolutionNode, truck: ITruck, customer: ICustomer) {
+    if (solution.state !== ESolutionNodeState.INTERACTIVE) {
+      solution = this.fork(solution);
+    }
+    solution.toggleCustomerLocked(truck, customer);
+  }
+
+  @action
+  toggleTruckLocked(solution: SolutionNode, truck: ITruckRoute) {
+    if (solution.state !== ESolutionNodeState.INTERACTIVE) {
+      solution = this.fork(solution);
+    }
+    solution.toggleTruckLocked(truck);
+  }
+
 }
