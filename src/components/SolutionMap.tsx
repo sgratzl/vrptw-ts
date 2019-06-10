@@ -79,6 +79,10 @@ class SolutionMapImpl extends React.Component<ISolutionMapProps, ISolutionMapImp
         return this.map ? this.map.latLngToLayerPoint([0, v]).x : v;
       }
     });
+
+    // console.log(this.map.getPixelBounds());
+    // console.log(this.map.getBounds());
+    // console.log(this.map.getContainer().getBoundingClientRect());
   }
 
   componentWillUnmount() {

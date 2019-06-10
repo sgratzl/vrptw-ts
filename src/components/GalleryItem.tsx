@@ -44,14 +44,20 @@ export interface IGalleryItemProps extends WithStyles<typeof styles>, IWithStore
 // from Leaflet map.getBounds()
 const VISIBLE_BOUNDS = {
   _southWest: {
-    lat: -37.95502661288625,
-    lng: 145.0566101074219
+    lat: -37.9428437495074,
+    lng: 145.09334564208987
   },
   _northEast: {
-    lat: -37.8699751770108,
-    lng: 145.2159118652344
+    lat: -37.88217011264733,
+    lng: 145.17917633056643
   }
 };
+
+// from Leaflet map.getContainer().getBoundingClientRect()
+const VISIBLE_PIXEL_BOUNDS = {
+  height: 224,
+  width: 250
+}
 
 
 @inject('store')
@@ -62,8 +68,8 @@ class GalleryItem extends React.Component<IGalleryItemProps> {
     const store = this.props.store!;
 
 
-    const lat2y = scaleLinear().domain([VISIBLE_BOUNDS._southWest.lat, VISIBLE_BOUNDS._northEast.lat]).range([200, 0]);
-    const lng2x = scaleLinear().domain([VISIBLE_BOUNDS._southWest.lng, VISIBLE_BOUNDS._northEast.lng]).range([0, 200]);
+    const lat2y = scaleLinear().domain([VISIBLE_BOUNDS._southWest.lat, VISIBLE_BOUNDS._northEast.lat]).range([VISIBLE_PIXEL_BOUNDS.height, 0]);
+    const lng2x = scaleLinear().domain([VISIBLE_BOUNDS._southWest.lng, VISIBLE_BOUNDS._northEast.lng]).range([0, VISIBLE_PIXEL_BOUNDS.width]);
 
     const isLeft = store.leftSelectedSolution === solution;
     const isRight = store.rightSelectedSolution === solution;
@@ -94,7 +100,7 @@ class GalleryItem extends React.Component<IGalleryItemProps> {
         }
 
       </Toolbar>
-      <SolutionRoute solution={solution} width={250} height={200} lat2y={lat2y} lng2x={lng2x} />
+      <SolutionRoute solution={solution} width={250} height={224} lat2y={lat2y} lng2x={lng2x} />
       <SolutionStats solution={solution}/>
     </div>;
   }
