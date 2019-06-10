@@ -6,10 +6,11 @@ import classNames from 'classnames';
 import {scaleLinear, scaleBand} from 'd3';
 import SolutionNode from '../model/SolutionNode';
 import ContainerDimensions from 'react-container-dimensions';
-import {IconButton, Typography, Tooltip} from '@material-ui/core';
+import {IconButton, Typography, Tooltip, Popover} from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import {bind} from 'decko';
 import {toDistance} from '../utils';
+import GalleryItem from './GalleryItem';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -42,7 +43,6 @@ const styles = (_theme: Theme) => createStyles({
   },
   bar: {
     background: 'lightgrey',
-    cursor: 'pointer',
     position: 'absolute',
     bottom: 0
   },
@@ -86,15 +86,25 @@ export interface ISolutionHistoryProps extends WithStyles<typeof styles>, IWithS
 @inject('store')
 @observer
 class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: number, height: number}> {
-  private onBarClick(solution: SolutionNode) {
+  // private onBarClick(solution: SolutionNode) {
+  //   const store = this.props.store!;
+  //   if (!store.leftSelectedSolution) {
+  //     store.leftSelectedSolution = solution;
+  //   } else {
+  //     store.rightSelectedSolution = solution;
+  //   }
+  //   if (!store.gallerySolutions.includes(solution)) {
+  //     store.gallerySolutions.push(solution);
+  //   }
+  // }
+
+  private hoverSolutionBar(anchor: HTMLElement | null, solution: SolutionNode | null) {
     const store = this.props.store!;
-    if (!store.leftSelectedSolution) {
-      store.leftSelectedSolution = solution;
-    } else {
-      store.rightSelectedSolution = solution;
-    }
-    if (!store.gallerySolutions.includes(solution)) {
-      store.gallerySolutions.push(solution);
+    store.hoveredSolution = solution;
+
+    if (anchor) {
+      store.ui.visibleHistorySolution = solution;
+      store.ui.visibleHistoryAnchor = anchor;
     }
   }
 
@@ -131,16 +141,15 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
       </svg>
       <main>
         <div className={classes.content}>
-          {store.solutions.map((s, i) => <Tooltip title={`${s.name} (${toDistance(s.distance)})`} placement="top"><div
+          {store.solutions.map((s, i) => <div
             key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
             style={{
               left: `${start + (bandwidth + step) * i}px`,
               width: `${bandwidth}px`,
               height: `${yscale.range()[0] - yscale(s.distance)}px`
             }}
-            onMouseEnter={() => store.hoveredSolution = s} onMouseLeave={() => store.hoveredSolution = null}
-            onClick={() => this.onBarClick(s)}
-          /></Tooltip>)}
+            onMouseEnter={(evt) => this.hoverSolutionBar(evt.currentTarget, s)} onMouseLeave={() => this.hoverSolutionBar(null, null)}
+          />)}
         </div>
         <svg width={width - left} height={bottom} className={classes.xaxis}>
           <line x2={xscale.range()[1]} />
@@ -191,6 +200,7 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
 
   render() {
     const classes = this.props.classes;
+    const store = this.props.store!;
 
     return <div className={classNames(classes.root, this.props.className)}>
       <Typography variant="h6">Solution History</Typography>
@@ -208,6 +218,13 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
           </Tooltip>
         </div>
       </main>
+      {store.ui.visibleHistoryAnchor && <Popover open anchorEl={store.ui.visibleHistoryAnchor} onClose={() => store.ui.visibleHistoryAnchor = null}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}>
+        <GalleryItem solution={store.ui.visibleHistorySolution!} />
+      </Popover>}
     </div>;
   }
 }

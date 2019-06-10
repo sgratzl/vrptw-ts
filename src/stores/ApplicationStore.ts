@@ -9,6 +9,8 @@ import SolutionNode, {ESolutionNodeState} from '../model/SolutionNode';
 export interface IUIFlags {
   visibleViolationAnchor: HTMLElement | null;
   visibleViolationSolution: SolutionNode | null;
+  visibleHistoryAnchor: HTMLElement | null;
+  visibleHistorySolution: SolutionNode | null;
 }
 
 export class ApplicationStore {
@@ -19,7 +21,9 @@ export class ApplicationStore {
   @observable
   ui: IUIFlags = {
     visibleViolationAnchor: null,
-    visibleViolationSolution: null
+    visibleViolationSolution: null,
+    visibleHistoryAnchor: null,
+    visibleHistorySolution: null
   };
 
   @observable
