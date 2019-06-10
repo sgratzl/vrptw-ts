@@ -3,7 +3,7 @@ import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import {ITruckRoute, isDepot} from '../model/interfaces';
-import {Typography, Badge, Tooltip} from '@material-ui/core';
+import {Typography, Badge, Tooltip, Toolbar, IconButton} from '@material-ui/core';
 import {scaleLinear, scaleBand, line, scaleTime, timeMinute} from 'd3';
 import ContainerDimensions from 'react-container-dimensions';
 import classNames from 'classnames';
@@ -11,6 +11,7 @@ import SolutionNode from '../model/SolutionNode';
 import {toDistance} from '../utils';
 import Home from '@material-ui/icons/Home';
 import Lock from '@material-ui/icons/Lock';
+import LockOpen from '@material-ui/icons/LockOpen';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -21,6 +22,16 @@ const styles = (_theme: Theme) => createStyles({
     display: 'flex',
     flexDirection: 'column',
     flex: '1 1 0',
+  },
+  locked: {
+    // TODO,
+    '& > $route': {
+      opacity: 0.5,
+      cursor: 'not-allowed'
+    },
+    '& > $route *': {
+      pointerEvents: ['none', '!important'] as any, // no supported by typings but by JSS
+    }
   },
   route: {
     flex: '1 1 0',
@@ -182,10 +193,16 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
 class MareyTruck extends React.Component<IMareyTruckProps> {
 
   render() {
-    const {truck, classes} = this.props;
+    const {truck, classes, solution} = this.props;
     const store = this.props.store!;
-    return <div className={classNames(classes.truck)} style={{flexGrow: truck.route.length}} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
-      <Typography>{truck.truck.name} ({toDistance(truck.totalDistance)}, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
+    const isLocked = solution.isTruckLocked(truck);
+    return <div className={classNames(classes.truck, {[classes.locked]: isLocked})} style={{flexGrow: truck.route.length}} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
+      <Toolbar disableGutters variant="dense">
+        <Typography>{truck.truck.name} ({toDistance(truck.totalDistance)}, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
+        <IconButton onClick={() => solution.toggleTruckLocked(truck)} title={isLocked ? `The route of ${truck.truck.name} is locked - Click to unlock` : `Click to lock the route of truck ${truck.truck.name}`}>
+          {isLocked ? <Lock /> : <LockOpen />}
+        </IconButton>
+      </Toolbar>
       <div className={classes.route}>
       <ContainerDimensions>{(args) => <MareyTruckRoute {...args} {...this.props} />}</ContainerDimensions>
       </div>

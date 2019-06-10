@@ -1,4 +1,4 @@
-import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, ILockedTruckConstraint, IProblem, isDepot, ICustomer, ITruck} from './interfaces';
+import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, ILockedTruckConstraint, IProblem, isDepot, ICustomer, ITruck, ITruckRoute} from './interfaces';
 import {observable, computed, action} from 'mobx';
 import {problem2params} from './problem';
 import {MODEL, constraints2code, checkConstraints} from './constraints';
@@ -141,6 +141,23 @@ export default class SolutionNode implements IConstraints, ISolution {
       this.lockedCustomers.splice(index, 1);
     } else {
       this.lockedCustomers.push({truck, customer});
+    }
+
+    this.checkViolations();
+  }
+
+  isTruckLocked(truck: ITruckRoute) {
+    return this.lockedTrucks.find((d) => d.truck === truck.truck);
+  }
+
+  @action
+  toggleTruckLocked(truck: ITruckRoute) {
+    const index = this.lockedTrucks.findIndex((d) => d.truck === truck.truck);
+    // TODO need to fork?
+    if (index >= 0) {
+      this.lockedTrucks.splice(index, 1);
+    } else {
+      this.lockedTrucks.push({truck: truck.truck, customers: truck.route.filter((d) => !isDepot(d.customer)).map((d) => d.customer)});
     }
 
     this.checkViolations();
