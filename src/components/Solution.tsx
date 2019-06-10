@@ -2,13 +2,15 @@ import React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {Typography, Popover, List, ListItem, Avatar, ListItemText, Toolbar} from '@material-ui/core';
+import {Typography, Popover, List, ListItem, Avatar, ListItemText, Toolbar, IconButton} from '@material-ui/core';
 import MareyChart from './MareyChart';
 import SolutionMap from './SolutionMap';
 import classNames from 'classnames';
 import SolutionStats from './SolutionStats';
 import SolutionNode from '../model/SolutionNode';
 import Error from '@material-ui/icons/Error';
+import Bookmark from '@material-ui/icons/Bookmark';
+import BookmarkBorder from '@material-ui/icons/BookmarkBorder';
 import {bind} from 'decko';
 import {toDistance} from '../utils';
 import SolutionState from './SolutionState';
@@ -88,8 +90,9 @@ class Solution extends React.Component<ISolutionProps> {
             onMouseEnter={() => store.hoveredSolution = solution}
             onMouseLeave={() => store.hoveredSolution = null}>
         <Toolbar disableGutters variant="dense" className={classes.header}>
-        <Typography variant="h6">{solution.name} ({toDistance(solution.distance)})</Typography>
+          <Typography variant="h6">{solution.name} ({toDistance(solution.distance)})</Typography>
           <SolutionState solution={solution} />
+        <IconButton onClick={() => store.toggleInGallery(solution)}>{store.isInGallery(solution) ? <Bookmark/> : <BookmarkBorder/>}</IconButton>
           <div className={classes.spacer} />
         {solution.valid ? null : <React.Fragment>
           <Typography color="error" onClick={this.openViolationList}>{solution.violations.length} violations</Typography>

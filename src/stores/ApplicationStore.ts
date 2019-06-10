@@ -150,4 +150,22 @@ export class ApplicationStore {
     solution.toggleTruckLocked(truck);
   }
 
+  isInGallery(solution: SolutionNode) {
+    return this.gallerySolutions.includes(solution);
+  }
+
+  @action
+  toggleInGallery(solution: SolutionNode) {
+    const index = this.gallerySolutions.indexOf(solution);
+    if (index >= 0) {
+      this.gallerySolutions.splice(index, 1);
+    } else {
+      this.gallerySolutions.push(solution);
+    }
+  }
+
+  isInFocus(solution: SolutionNode) {
+    return this.leftSelectedSolution === solution || this.rightSelectedSolution === solution;
+  }
+
 }
