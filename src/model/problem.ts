@@ -5,13 +5,13 @@ import {IDataObject} from 'minizinc';
 
 const problem: IProblem = {
   trucks: smallProblem.params.capacity.map((capacity, i) => ({
-    id: i,
+    id: i + 1,
     color: truckColor[i],
     name: `Electrican ${i + 1}`,
     capacity
   })),
   customers: smallProblem.params.demand.map((demand, i) => ({
-    id: i,
+    id: i + 1,
     name: smallProblem.name[i],
     lat: smallProblem.locationX[i],
     lng: smallProblem.locationY[i],
@@ -21,7 +21,7 @@ const problem: IProblem = {
     serviceTime: smallProblem.params.serviceTime[i],
   })),
   depot: {
-    id: smallProblem.name.length - 1,
+    id: smallProblem.name.length - 1 + 1,
     isDepot: true,
     name: smallProblem.name[smallProblem.name.length - 1],
     lat: smallProblem.locationX[smallProblem.locationX.length - 1],

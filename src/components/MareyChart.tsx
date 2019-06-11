@@ -230,7 +230,7 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
     const dateString = (v: number) => TIME_FORMAT(timeMinute.offset(BASE_DATE, v));
 
     return this.props.connectDragSource!(<div
-      className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
+      className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer === route.customer})}
       onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
       style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
       <Tooltip title={isLocked ? `Customer ${route.customer.name} has to be served by ${truck.truck.name} - Click to unlock` : `Click to force customer ${route.customer.name} to be served by ${truck.truck.name}`}>

@@ -1,29 +1,26 @@
-import {IOrderConstraint, IConstraints, ISolution, IServedCustomer, ITruck, ICustomer, isDepot, ITruckRoute} from './interfaces';
+import {IOrderConstraint, IConstraints, ISolution, IServedCustomer, ITruck, ICustomer, isDepot, ITruckRoute, ILockedCustomerConstraint, ILockedTruckConstraint} from './interfaces';
 import model from 'raw-loader!../model/model.mzn';
 
 export const MODEL = model;
 
-export function buildOrderConstraint(constraints: IOrderConstraint[]) {
-  if (constraints.length === 0) {
-    return '';
-  }
-
-  return `
-constraint forall (i, j in Customers) (
-  if (${constraints.map(({from, to}) => `(i == ${from.id} /\\ j == ${to.id})`).join(` \\/ `)})
-  then
-      startOfService[i]+serviceTime[i] <= arrivalTime[j] /\\
-      vehicleOf[i] == vehicleOf[j]
-  else
-      startOfService[i]+serviceTime[i] >= 0
-  endif
-)`;
+function buildOrderConstraint(constraints: IOrderConstraint[]) {
+  return constraints.map((d) => `constraint :: "${d.from.id} served before ${d.to.id}" vehicleOf[${d.from.id}] == vehicleOf[${d.to.id}] /\\ startOfService[${d.from.id}] + serviceTime[${d.from.id}] <= arrivalTime[${d.to.id}];`).join('\n');
 }
 
+function buildCustomerLockConstraint(constraints: ILockedCustomerConstraint[]) {
+  return constraints.map((d) => `constraint :: "${d.customer.id} served by ${d.truck.id}" vehicleOf[${d.customer.id}] == ${d.truck.id};`).join('\n');
+}
 
+function buildTruckLockConstraint(constraints: ILockedTruckConstraint[]) {
+  // TODO proper customer order using successor
+  return constraints.map((d) => `constraint :: "${d.truck.id} serves ${d.customers.map((d) => d.id).join('->')}" ${d.customers.map((c) => `vehicleOf[${c.id}] == ${d.truck.id}`).join(' /\\ ')};`).join('\n');
+}
 export function constraints2code(constraints: IConstraints) {
-  // TODO so far just support for partial order ones
-  return buildOrderConstraint(constraints.partialOrderConstraints);
+  return `
+${buildOrderConstraint(constraints.partialOrderConstraints)}
+${buildCustomerLockConstraint(constraints.lockedCustomers)}
+${buildTruckLockConstraint(constraints.lockedTrucks)}
+`;
 }
 
 export function checkGenericTruck(truck: ITruckRoute) {

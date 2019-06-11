@@ -96,7 +96,7 @@ class Solution extends React.Component<ISolutionProps> {
         <IconButton onClick={() => store.toggleInGallery(solution)}>{store.isInGallery(solution) ? <Bookmark/> : <BookmarkBorder/>}</IconButton>
           <div className={classes.spacer} />
         {solution.valid ? null : <React.Fragment>
-          <Typography color="error" onClick={this.openViolationList}>{solution.violations.length} violations</Typography>
+          <Typography color="error" onClick={this.openViolationList}>{solution.violations.length} violation{solution.violations.length > 1 ? 's' : ''}</Typography>
           <Popover anchorEl={store.ui.visibleViolationAnchor}
             open={store.ui.visibleViolationAnchor != null && store.ui.visibleViolationSolution === solution}
             onClose={this.closeViolationList}

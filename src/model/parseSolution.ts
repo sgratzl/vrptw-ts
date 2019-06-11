@@ -15,7 +15,6 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
     wayPoints: [],
     route: []
   }));
-  // since starting with 1
   const truckById = (id: number) => trucks[id - 1];
   const customerById = (id: number) => id > problem.customers.length ? depot : problem.customers[id - 1];
 
@@ -68,8 +67,8 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
     for (let i = 1; i < route.length; i++) {
       const to = route[i];
       const from = route[i - 1];
-      const distance = problem.distances[from.customer.id][to.customer.id];
-      const travelTime = problem.travelTimes[from.customer.id][to.customer.id];
+      const distance = problem.distances[from.customer.id - 1][to.customer.id - 1];
+      const travelTime = problem.travelTimes[from.customer.id - 1][to.customer.id - 1];
       to.distanceTo = distance;
       to.timeTo = travelTime;
       from.departureTime = to.arrivalTime - travelTime;
@@ -123,8 +122,8 @@ export function optimizeLocally(problem: IProblem, truck: ITruckRoute, constrain
         continue;
       }
       const prev = route[i - 1];
-      const distanceTo = problem.distances[prev.customer.id]![c.id]!;
-      const timeTo = problem.travelTimes[prev.customer.id]![c.id]!;
+      const distanceTo = problem.distances[prev.customer.id - 1]![c.id - 1]!;
+      const timeTo = problem.travelTimes[prev.customer.id - 1]![c.id - 1]!;
       const arrivalTime = prev.departureTime + timeTo;
       const startOfService = Math.max(arrivalTime, c.startTime);
       if (startOfService > c.startTime) {
