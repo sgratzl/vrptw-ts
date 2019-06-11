@@ -151,10 +151,9 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
 
       // link from-center-to
       return <g transform="translate(0, 18)">
-        {links.map(({from, to}) => <path key={`${from.id}-${to.id}`} className={classes.link} d={lineGen([from.id, -Math.abs(from.id + to.id)/2, to.id])!}/>)}
+        {links.map(({from, to}) => <path key={`${from.id}-${to.id}`} className={classes.link} d={lineGen([from.id, -Math.abs(from.id + to.id) / 2, to.id])!} />)}
       </g>;
-    }
-
+    };
 
     return <article className={classes.main}>
       <svg width={left} height={height} className={classes.yaxis}>

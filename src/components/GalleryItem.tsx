@@ -57,7 +57,7 @@ const VISIBLE_BOUNDS = {
 const VISIBLE_PIXEL_BOUNDS = {
   height: 224,
   width: 250
-}
+};
 
 
 @inject('store')
