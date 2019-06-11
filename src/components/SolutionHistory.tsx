@@ -3,7 +3,7 @@ import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import classNames from 'classnames';
-import {scaleLinear, scaleBand, line, curveBasis} from 'd3';
+import {scaleLinear, scaleBand, line, curveCardinal} from 'd3';
 import SolutionNode from '../model/SolutionNode';
 import ContainerDimensions from 'react-container-dimensions';
 import {IconButton, Typography, Tooltip, Popover} from '@material-ui/core';
@@ -116,10 +116,10 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
     const store = this.props.store!;
 
     const left = 80;
-    const bottom = 20;
+    const bottom = 30;
 
     const yscale = scaleLinear().domain([0, store.maxDistance]).rangeRound([height - bottom, 20]);
-    const xscale = scaleBand().domain(store.solutions.map((d) => d.name)).range([left, width - 20]).padding(0.1);
+    const xscale = scaleBand().domain(store.solutions.map((d) => d.id.toString())).range([left, width - 20]).padding(0.1);
 
     let bandwidth = xscale.bandwidth();
     let step = xscale.step();
@@ -148,10 +148,11 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
       };
       pushChildren(solution);
 
-      const lineGen = line<SolutionNode>().x((s) => start + bandwidth / 2 + (bandwidth + step) * store.solutions.indexOf(s)).y(() => 0).curve(curveBasis);
+      const lineGen = line<number>().x((s) => start + bandwidth / 2 + (bandwidth + step) * Math.abs(s)).y((s) => s < 0 ? 10 : 0).curve(curveCardinal);
 
-      return <g>
-        {links.map(({from, to}) => <path key={`${from.id}-${to.id}`} className={classes.link} d={lineGen([from, to])!}/>)}
+      // link from-center-to
+      return <g transform="translate(0, 18)">
+        {links.map(({from, to}) => <path key={`${from.id}-${to.id}`} className={classes.link} d={lineGen([from.id, -Math.abs(from.id - to.id)/2, to.id])!}/>)}
       </g>;
     }
 
@@ -168,10 +169,10 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
       </svg>
       <main>
         <div className={classes.content}>
-          {store.solutions.map((s, i) => <div
+          {store.solutions.map((s) => <div
             key={s.id} className={classNames(classes.bar, {[classes.selected]: store.hoveredSolution === s})}
             style={{
-              left: `${start + (bandwidth + step) * i}px`,
+              left: `${start + (bandwidth + step) * s.id}px`,
               width: `${bandwidth}px`,
               height: `${yscale.range()[0] - yscale(s.distance)}px`
             }}
