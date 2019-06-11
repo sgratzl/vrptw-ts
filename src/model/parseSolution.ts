@@ -1,5 +1,7 @@
 import computeRoute from '../server/route';
-import {IProblem, IServerSolution, ITruckRoute, ISolution} from './interfaces';
+import {IProblem, IServerSolution, ITruckRoute, ISolution, isDepot, IServedCustomer, IConstraints} from './interfaces';
+import {permutation} from 'js-combinatorics';
+import {isValidTruckRoute} from './constraints';
 
 export default function parseSolution(problem: IProblem, solution: IServerSolution): Promise<ISolution> {
   const depot = problem.depot;
@@ -87,4 +89,80 @@ function computeRouteWayPoints(truck: ITruckRoute) {
     truck.wayPoints = wayPoints;
     return truck;
   });
+}
+
+
+export function optimizeLocally(problem: IProblem, truck: ITruckRoute, constraints: IConstraints) {
+  if (truck.usedCapacity > truck.truck.capacity) {
+    return false; // cannot optimize
+  }
+
+  const customers = truck.route.map((d) => d.customer).filter((d) => !isDepot(d));
+
+  let best: ITruckRoute | null = null;
+
+  permutation(customers).forEach((order) => {
+    // create complete route
+    order = order.slice();
+    order.unshift(problem.depot);
+    order.push(problem.depot);
+
+    const route: IServedCustomer[] = [];
+    for (let i = 0; i < order.length; i++) {
+      const c = order[i];
+      if (i === 0) {
+        route.push({
+          customer: c,
+          arrivalTime: 0,
+          departureTime: 0,
+          distanceTo: 0,
+          endOfService: 0,
+          startOfService: 0,
+          timeTo: 0,
+        });
+        continue;
+      }
+      const prev = route[i - 1];
+      const distanceTo = problem.distances[prev.customer.id]![c.id]!;
+      const timeTo = problem.travelTimes[prev.customer.id]![c.id]!;
+      const arrivalTime = prev.departureTime + timeTo;
+      const startOfService = Math.max(arrivalTime, c.startTime);
+      if (startOfService > c.startTime) {
+        // invalid solution
+        return;
+      }
+      route.push({
+        customer: c,
+        arrivalTime,
+        distanceTo,
+        timeTo,
+        startOfService,
+        endOfService: startOfService + c.serviceTime,
+        departureTime: startOfService + c.serviceTime
+      });
+    }
+    const totalDistance = route.reduce((acc, a) => acc + a.distanceTo, 0);
+    const test = Object.assign({}, truck, {totalDistance, route});
+
+    if (!isValidTruckRoute(test, problem, constraints)) {
+      return;
+    }
+
+    if (!best || best.totalDistance > totalDistance) {
+      best = test;
+    }
+  });
+
+  if (!best) {
+    return false;
+  }
+
+  // found a better solution
+  Object.assign(truck, best);
+  Object.assign(truck, {
+    startTime: truck.route[0].arrivalTime,
+    totalTime: truck.route[truck.route.length - 1].departureTime
+  });
+
+  return computeRouteWayPoints(truck);
 }

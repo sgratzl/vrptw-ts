@@ -1,7 +1,8 @@
 import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, ILockedTruckConstraint, IProblem, isDepot, ICustomer, ITruck, ITruckRoute, IServedCustomer} from './interfaces';
 import {observable, computed, action} from 'mobx';
 import {problem2params} from './problem';
-import {MODEL, constraints2code, checkConstraints} from './constraints';
+import {MODEL, constraints2code, checkConstraints, checkGenericConstraints} from './constraints';
+import {optimizeLocally} from './parseSolution';
 
 export enum ESolutionNodeState {
   INTERACTIVE = 'interactive',
@@ -76,26 +77,7 @@ export default class SolutionNode implements IConstraints, ISolution {
 
   private checkViolations() {
     const violations: string[] = [];
-    // check inherit constraints
-    for (const truck of this.solution.trucks) {
-      if (truck.usedCapacity > truck.truck.capacity) {
-        violations.push(`Truck ${truck.truck.name} used a capacity of ${truck.usedCapacity}/${truck.truck.capacity}`);
-      }
-
-      for (const served of truck.route) {
-        const customer = served.customer;
-        if (isDepot(customer)) {
-          continue;
-        }
-        if (served.startOfService < customer.startTime) {
-          violations.push(`Customer ${customer.name} served by ${truck.truck.name} before his/her start time`);
-        }
-        if (served.startOfService > customer.endTime) {
-          violations.push(`Customer ${customer.name} served by ${truck.truck.name} after his/her end time`);
-        }
-      }
-    }
-
+    violations.push(...checkGenericConstraints(this.solution));
     // check custom constraints
     violations.push(...checkConstraints(this.solution, this.problem));
     violations.push(...checkConstraints(this.solution, this));
@@ -191,7 +173,7 @@ export default class SolutionNode implements IConstraints, ISolution {
     truck.route.splice(truck.route.length - 1, 0, served);
     truck.usedCapacity += customer.demand;
 
-    // TODO locally resolve the route 
+    optimizeLocally(this.problem, truck, this);
   }
 
   @computed
