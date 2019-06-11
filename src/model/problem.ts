@@ -3,9 +3,10 @@ import {IProblem} from './interfaces';
 import smallProblem from './small';
 import {IDataObject} from 'minizinc';
 
+// create a better structured problem definition out of the other one
 const problem: IProblem = {
   trucks: smallProblem.params.capacity.map((capacity, i) => ({
-    id: i + 1,
+    id: i + 1, // 1 based as in MiniZinc model
     color: truckColor[i],
     name: `Electrican ${i + 1}`,
     capacity

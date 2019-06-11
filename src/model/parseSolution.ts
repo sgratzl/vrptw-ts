@@ -18,10 +18,11 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
   const truckById = (id: number) => trucks[id - 1];
   const customerById = (id: number) => id > problem.customers.length ? depot : problem.customers[id - 1];
 
-  // assign all points to a truck
+  // assign all customers to the truck they are served by
   solution.successor.forEach((_, i) => {
     const truck = truckById(solution.vehicleOf[i]);
     const customer = customerById(i + 1);
+
     const arrivalTime = solution.arrivalTime[i];
     const startOfService = solution.startOfService[i];
 
@@ -34,7 +35,7 @@ export default function parseSolution(problem: IProblem, solution: IServerSoluti
       endOfService: startOfService + customer.serviceTime,
       departureTime: NaN, // computed after
       distanceTo: NaN, // computed later
-      timeTo: NaN
+      timeTo: NaN // computed later
     };
     truck.route.push(servedCustomer);
   });

@@ -32,7 +32,7 @@ export interface IServedCustomer {
   startOfService: number;
   endOfService: number;
   departureTime: number;
-  // distance to this customer
+  // distance to this customer from the previous one
   distanceTo: number;
   timeTo: number;
 }

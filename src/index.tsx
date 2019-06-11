@@ -4,7 +4,6 @@ import {Provider} from 'mobx-react';
 import App from './App';
 import {ApplicationStore} from './stores';
 import 'typeface-roboto';
-import './style.scss';
 
 const store = new ApplicationStore();
 

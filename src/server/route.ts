@@ -26,6 +26,7 @@ export default function computeRoute(route: ILatLng[]): Promise<ILatLng[]> {
         wayPoints.push(l);
         return;
       }
+      // avoid duplicates
       const last = wayPoints[wayPoints.length - 1];
       if (last.lat === l.lat && last.lng === l.lng) {
         return;

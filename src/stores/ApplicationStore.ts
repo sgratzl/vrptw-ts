@@ -7,8 +7,11 @@ import problem from '../model/problem';
 import SolutionNode, {ESolutionNodeState} from '../model/SolutionNode';
 
 export interface IUIFlags {
+  // for showing the violations popup
   visibleViolationAnchor: HTMLElement | null;
   visibleViolationSolution: SolutionNode | null;
+
+  // for showing the history popover
   visibleHistoryAnchor: HTMLElement | null;
   visibleHistorySolution: SolutionNode | null;
 }
@@ -30,10 +33,10 @@ export class ApplicationStore {
   rootProblem: IProblem = problem;
 
   @observable
-  solutions: SolutionNode[] = [];
+  readonly solutions: SolutionNode[] = [];
 
   @observable
-  gallerySolutions: SolutionNode[] = [];
+  readonly gallerySolutions: SolutionNode[] = [];
 
   @observable
   leftSelectedSolution: SolutionNode | null = null;

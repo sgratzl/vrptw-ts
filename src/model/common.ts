@@ -1,4 +1,8 @@
 
+/**
+ * (customers + depot) x (customers + depot) distance matrix
+ * so last row and colum nare the distances to the depot
+ */
 export const distance = [
   [0, 6415, 2565, 2775, 3910, 1891, 4185, 5848, 3715, 5245, 2704, 5118, 2823],
   [6841, 0, 6233, 4694, 5532, 8018, 4955, 1737, 3595, 4725, 6372, 3902, 4856],

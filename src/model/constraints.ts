@@ -4,6 +4,7 @@ import model from 'raw-loader!../model/model.mzn';
 export const MODEL = model;
 
 function buildOrderConstraint(constraints: IOrderConstraint[]) {
+  // same vehicle and served before the other
   return constraints.map((d) => `constraint :: "${d.from.id} served before ${d.to.id}" vehicleOf[${d.from.id}] == vehicleOf[${d.to.id}] /\\ startOfService[${d.from.id}] + serviceTime[${d.from.id}] <= arrivalTime[${d.to.id}];`).join('\n');
 }
 
@@ -15,6 +16,7 @@ function buildTruckLockConstraint(constraints: ILockedTruckConstraint[]) {
   // TODO proper customer order using successor
   return constraints.map((d) => `constraint :: "${d.truck.id} serves ${d.customers.map((d) => d.id).join('->')}" ${d.customers.map((c) => `vehicleOf[${c.id}] == ${d.truck.id}`).join(' /\\ ')};`).join('\n');
 }
+
 export function constraints2code(constraints: IConstraints) {
   return `
 ${buildOrderConstraint(constraints.partialOrderConstraints)}
