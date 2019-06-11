@@ -158,7 +158,7 @@ export class ApplicationStore {
   }
 
   @action
-  moveCustomer(solution: SolutionNode, truck: ITruckRoute, customer: ICustomer) {
+  moveCustomer(solution: SolutionNode, truck: ITruck, customer: ICustomer) {
     if (solution.state !== ESolutionNodeState.INTERACTIVE) {
       solution = this.fork(solution);
     }

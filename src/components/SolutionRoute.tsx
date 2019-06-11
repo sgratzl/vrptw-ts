@@ -86,14 +86,14 @@ class SolutionTruckRoute extends React.Component<ISolutionTruckRouteProps> {
   }
 
   render() {
-    const {truck, lat2y, lng2x, classes, solution} = this.props;
+    const {truck, lat2y, lng2x, classes} = this.props;
     const store = this.props.store!;
 
-    return <g className={classNames({[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == null})}
+    return <g className={classNames({[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredCustomer == null})}
       onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
       <path d={this.genRoute(truck.wayPoints)!} style={{stroke: truck.truck.color}} markerMid="url(#arrow)" markerEnd="url(#arrow)" />
       {truck.route.filter((d) => !isDepot(d.customer)).map((r) => <g key={r.customer.id}
-        className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer === r.customer})}
+        className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredCustomer === r.customer})}
         onMouseEnter={() => store.hoveredCustomer = r.customer} onMouseLeave={() => store.hoveredCustomer = null}
         transform={`translate(${lng2x(r.customer.lng)},${lat2y(r.customer.lat)})`}>
           <circle style={{fill: truck.truck.color}} r="10" onMouseEnter={() => store.hoveredCustomer = r.customer} onMouseLeave={() => store.hoveredCustomer = null}>
@@ -124,7 +124,7 @@ class SolutionRoute extends React.Component<ISolutionRouteProps> {
       {solution.trucks.map((truck) => <SolutionTruckRoute key={truck.truck.id} truck={truck} {...this.props} />)}
       {/*depot at the end*/}
       <g
-        className={classNames(classes.customer, classes.depot, {[classes.selectedC]: store.hoveredSolution === solution && store.hoveredCustomer === depot})} onMouseEnter={() => store.hoveredCustomer = depot} onMouseLeave={() => store.hoveredCustomer = null}
+        className={classNames(classes.customer, classes.depot, {[classes.selectedC]: store.hoveredCustomer === depot})} onMouseEnter={() => store.hoveredCustomer = depot} onMouseLeave={() => store.hoveredCustomer = null}
         transform={`translate(${lng2x(depot.lng)},${lat2y(depot.lat)})`}>
         <circle style={{stroke: 'black'}} r="10" >
           <title>{depot.name}</title>

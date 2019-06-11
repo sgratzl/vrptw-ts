@@ -51,8 +51,13 @@ export default class SolutionNode implements IConstraints, ISolution {
     this.partialOrderConstraints = parent.partialOrderConstraints.slice();
     this.lockedCustomers = parent.lockedCustomers.slice();
     this.lockedTrucks = parent.lockedTrucks.slice();
-    // copy solution
-    this.solution = parent.solution;
+    // copy solution (deepish)
+    this.solution = Object.assign({}, parent.solution, {
+      trucks: parent.solution.trucks.map((t) => Object.assign({}, t, {
+        route: t.route.map((c) => Object.assign({}, c))
+      }))
+    });
+
     this.violations = parent.violations;
   }
 
@@ -144,7 +149,7 @@ export default class SolutionNode implements IConstraints, ISolution {
   }
 
   @action
-  moveCustomer(truck: ITruckRoute, customer: ICustomer) {
+  moveCustomer(truck: ITruck, customer: ICustomer) {
     if (isDepot(customer)) {
       return;
     }
@@ -154,7 +159,7 @@ export default class SolutionNode implements IConstraints, ISolution {
       this.lockedCustomers.splice(index, 1);
     }
 
-    this.lockedCustomers.push({truck: truck.truck, customer});
+    this.lockedCustomers.push({truck, customer});
     // modify solution to move the customer to the right truck, even if it destroys everthing for now
     let served: IServedCustomer | null = null;
     for (const t of this.trucks) {
@@ -170,10 +175,11 @@ export default class SolutionNode implements IConstraints, ISolution {
       return;
     }
     // insert before depot
-    truck.route.splice(truck.route.length - 1, 0, served);
-    truck.usedCapacity += customer.demand;
+    const route = this.trucks.find((d) => d.truck === truck)!;
+    route.route.splice(route.route.length - 1, 0, served);
+    route.usedCapacity += customer.demand;
 
-    optimizeLocally(this.problem, truck, this);
+    optimizeLocally(this.problem, route, this);
   }
 
   @computed

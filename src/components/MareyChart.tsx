@@ -167,7 +167,7 @@ const squareTarget: DropTargetSpec<IMareyTruckProps> = {
     if (customer == null) {
       return;
     }
-    props.store!.moveCustomer(props.solution, props.truck, props.solution.problem.customers.find((d) => d.id === customer)!);
+    props.store!.moveCustomer(props.solution, props.truck.truck, props.solution.problem.customers.find((d) => d.id === customer)!);
   }
 };
 
@@ -204,7 +204,7 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
 
     if (isDepot(route.customer)) {
       return <div
-        className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
+        className={classNames(classes.customer, {[classes.selectedC]: store.hoveredCustomer === route.customer})}
         onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
         style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
         <Typography className={classes.label}><Home /></Typography>
@@ -230,7 +230,7 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
     const dateString = (v: number) => TIME_FORMAT(timeMinute.offset(BASE_DATE, v));
 
     return this.props.connectDragSource!(<div
-      className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer === route.customer})}
+      className={classNames(classes.customer, {[classes.selectedC]: store.hoveredCustomer === route.customer})}
       onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
       style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
       <Tooltip title={isLocked ? `Customer ${route.customer.name} has to be served by ${truck.truck.name} - Click to unlock` : `Click to force customer ${route.customer.name} to be served by ${truck.truck.name}`}>
@@ -253,7 +253,7 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
 @observer
 class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
   render() {
-    const {truck, classes, solution, width, height} = this.props;
+    const {truck, classes, width, height} = this.props;
     const store = this.props.store!;
     const xscale = scaleLinear().domain([0, store.maxFinishTime]).range([25, width - 5]).clamp(true);
     const yscale = scaleBand().domain(truck.route.map((_, i) => i.toString())).range([0, height]).padding(0.1);
@@ -277,7 +277,7 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
     return <React.Fragment>
       {truck.route.map((route, i) => <MareyServedCustomer key={i === 0 ? -1 : route.customer.id} i={i} route={route} xscale={xscale} yscale={yscale} {...this.props}/>)}
       <svg width={width} height={height} className={classes.truckRoute}>
-        <path d={genPath()!} className={classNames(classes.effective, {[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == null})} style={{stroke: truck.truck.color}}/>
+        <path d={genPath()!} className={classNames(classes.effective, {[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredCustomer == null})} style={{stroke: truck.truck.color}}/>
       </svg>
     </React.Fragment>;
   }
