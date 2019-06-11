@@ -3,7 +3,7 @@ import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import SolutionNode, {ESolutionNodeState} from '../model/SolutionNode';
-import {CircularProgress, IconButton, Badge} from '@material-ui/core';
+import {CircularProgress, IconButton, Badge, Tooltip} from '@material-ui/core';
 import Timelapse from '@material-ui/icons/Timelapse';
 import Memory from '@material-ui/icons/Memory';
 import Warning from '@material-ui/icons/Warning';
@@ -37,25 +37,31 @@ class SolutionState extends React.Component<ISolutionStateProps> {
   render() {
     const {classes, solution} = this.props;
 
-    switch(solution.state) {
+    switch (solution.state) {
       case ESolutionNodeState.INTERACTIVE:
-        return <IconButton onClick={this.onSolve} title="Solve this solution with the current constraints">
+        return <Tooltip title="Solve this solution with the current constraints">
+          <IconButton onClick={this.onSolve}>
             <Badge badgeContent={solution.countCustomConstraints} color="primary" title={`${solution.countCustomConstraints} number of extra constraints`}>
               <Memory />
             </Badge>
-          </IconButton>;
+          </IconButton>
+        </Tooltip>;
       case ESolutionNodeState.SOLVING:
         return <CircularProgress />;
       case ESolutionNodeState.TIMEDOUT:
-        return <IconButton title="The solution cannot be solved with the time frame - Click to try again"  onClick={this.onSolve}>
-          <Timelapse />
-        </IconButton>;
+        return <Tooltip title="The solution cannot be solved with the time frame - Click to try again">
+          <IconButton onClick={this.onSolve}>
+            <Timelapse />
+          </IconButton>
+        </Tooltip>;
       case ESolutionNodeState.UNSATISFIABLE:
-        return <IconButton disabled title="The solution cannot be solved with the given constraints">
-          <Badge badgeContent={solution.countCustomConstraints} color="error" title={`${solution.countCustomConstraints} number of extra constraints`}>
-            <Warning color="error"/>
-          </Badge>
-          </IconButton>;
+        return <Tooltip title="The solution cannot be solved with the given constraints">
+          <IconButton disabled >
+            <Badge badgeContent={solution.countCustomConstraints} color="error" title={`${solution.countCustomConstraints} number of extra constraints`}>
+              <Warning color="error" />
+            </Badge>
+          </IconButton>
+        </Tooltip>;
     }
 
     return <div className={classes.root}>

@@ -2,7 +2,7 @@ import React from 'react';
 import {observer, inject} from 'mobx-react';
 import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
-import {Typography, Toolbar, IconButton, Badge} from '@material-ui/core';
+import {Typography, Toolbar, IconButton, Badge, Tooltip} from '@material-ui/core';
 import SolutionRoute from './SolutionRoute';
 import {scaleLinear} from 'd3-scale';
 import classNames from 'classnames';
@@ -82,18 +82,24 @@ class GalleryItem extends React.Component<IGalleryItemProps> {
         <Typography variant="caption">{solution.name} ({toDistance(solution.distance)})</Typography>
         <div className={classes.spacer} />
         <SolutionState solution={solution} />
-        <IconButton onClick={() => store.leftSelectedSolution = isLeft ? null : solution} title="Show in the left focus">
+        <Tooltip title={isLeft ? `Remove solution from left focus` : `Show solution in the left focus`}>
+          <IconButton onClick={() => store.leftSelectedSolution = isLeft ? null : solution}>
           <Badge badgeContent="L" color={isLeft ? 'primary' : 'default'}>
             {isLeft ? <CenterFocusStrong /> : <CenterFocusWeak />}
           </Badge>
         </IconButton>
-          <IconButton onClick={() => store.rightSelectedSolution = isRight ? null : solution} title="Show in the left focus">
+        </Tooltip>
+        <Tooltip title={isRight ? `Remove solution from right focus` : `Show solution in the right focus`}>
+          <IconButton onClick={() => store.rightSelectedSolution = isRight ? null : solution} >
             <Badge badgeContent="R" color={isRight ? 'secondary' : 'default'}>
               {isRight ? <CenterFocusStrong /> : <CenterFocusWeak />}
             </Badge>
         </IconButton>
+        </Tooltip>
         {asPreview ? <React.Fragment>
-          <IconButton onClick={() => store.toggleInGallery(solution)}>{store.isInGallery(solution) ? <Bookmark/> : <BookmarkBorder/>}</IconButton>
+          <Tooltip title={store.isInGallery(solution) ? `Remove solution from gallery` : `Add solution to gallery`}>
+            <IconButton onClick={() => store.toggleInGallery(solution)}>{store.isInGallery(solution) ? <Bookmark/> : <BookmarkBorder/>}</IconButton>
+          </Tooltip>
           <IconButton onClick={() => store.ui.visibleHistoryAnchor = null}><Close/></IconButton>
         </React.Fragment> :
           <IconButton onClick={() => store.toggleInGallery(solution)}><Close/></IconButton>

@@ -123,10 +123,10 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
     let bandwidth = xscale.bandwidth();
     let step = xscale.step();
 
-    if (bandwidth > 50) {
+    if (bandwidth > 75) {
       // limit to bandwidth 50 and 5px distance
-      bandwidth = 50;
-      step = 5;
+      bandwidth = 75;
+      step = 10;
     }
     const start = step;
 
@@ -151,7 +151,7 @@ class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: nu
 
       // link from-center-to
       return <g transform="translate(0, 18)">
-        {links.map(({from, to}) => <path key={`${from.id}-${to.id}`} className={classes.link} d={lineGen([from.id, -Math.abs(from.id - to.id)/2, to.id])!}/>)}
+        {links.map(({from, to}) => <path key={`${from.id}-${to.id}`} className={classes.link} d={lineGen([from.id, -Math.abs(from.id + to.id)/2, to.id])!}/>)}
       </g>;
     }
 
