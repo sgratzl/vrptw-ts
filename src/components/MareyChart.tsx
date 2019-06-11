@@ -278,8 +278,8 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
 
     const dateString = (v: number) => TIME_FORMAT(timeMinute.offset(BASE_DATE, v));
 
-    const hint = (base: string) => <p>{base}<br/>Drag and drop on another truck to assign to different truck<br/>
-Drag and drop on another customer in the same truck to create partial order constraint</p>;
+    const hint = (base: string) => <p>{base}<br />Drag and drop on another truck to assign to different truck<br />
+      Drag and drop on another customer in the same truck to create partial order constraint</p>;
 
     return this.props.connectDropTarget!(this.props.connectDragSource!(<div
       className={classNames(classes.customer, {[classes.selectedC]: store.hoveredCustomer === route.customer || (this.props.canDrop && this.props.isOver)})}
@@ -295,7 +295,7 @@ Drag and drop on another customer in the same truck to create partial order cons
         <div className={classes.window} style={{transform: `translate(${windowStart}px,0)`, width: `${windowEnd - windowStart}px`}} />
       </Tooltip>
       <Tooltip title={`Service Time: ${dateString(route.startOfService)} - ${dateString(route.endOfService)}`}>
-        <div className={classes.service} style={{transform: `translate(${serviceStart}px,0)`, width: `${serviceEnd - serviceStart}px`, background: truck.truck.color}}/>
+        <div className={classes.service} style={{transform: `translate(${serviceStart}px,0)`, width: `${serviceEnd - serviceStart}px`, background: truck.truck.color}} />
       </Tooltip>
     </div>));
   }
@@ -332,11 +332,11 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
       const y1 = center + yscale(String(truck.route.findIndex((d) => d.customer === c.from)!))! + SHIFT;
       const y2 = center + yscale(String(truck.route.findIndex((d) => d.customer === c.to)!))! + SHIFT;
       const lineGen = line<number>().x((s) => s < 0 ? 2 : 8).y((v) => Math.abs(v)).curve(curveCardinal);
-      return lineGen([y1, -Math.abs((y1 + y2)/2), y2])!;
+      return lineGen([y1, -Math.abs((y1 + y2) / 2), y2])!;
     };
 
     return <React.Fragment>
-      {truck.route.map((route, i) => <MareyServedCustomer key={i === 0 ? -1 : route.customer.id} i={i} route={route} xscale={xscale} yscale={yscale} {...this.props}/>)}
+      {truck.route.map((route, i) => <MareyServedCustomer key={i === 0 ? -1 : route.customer.id} i={i} route={route} xscale={xscale} yscale={yscale} {...this.props} />)}
       <svg width={width} height={height} className={classes.truckRoute}>
         <path d={genPath()!} className={classNames(classes.effective, {[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredCustomer == null})} style={{stroke: truck.truck.color}} />
         <g>
@@ -350,7 +350,7 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
       <svg width={10} height={height} className={classes.partialOrders}>
         <defs>
           <marker id={`arrow${truck.truck.id}`} viewBox="0 0 10 10" refX="3" refY="5" markerUnits="strokeWidth" markerWidth="4" markerHeight="3" orient="auto">
-            <path d="M 0 0 L 10 5 L 0 10 z" className={classes.orderArrow}/>
+            <path d="M 0 0 L 10 5 L 0 10 z" className={classes.orderArrow} />
           </marker>
         </defs>
         {solution.partialOrderConstraints.filter((d) => truck.route.find((r) => r.customer === d.from) != null).map((c) =>
@@ -375,12 +375,14 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
     return this.props.connectDropTarget!(<div className={classNames(classes.truck, {[classes.locked]: isLocked, [classes.moveTarget]: this.props.canDrop && this.props.isOver})} style={{flexGrow: truck.route.length}} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
       <Toolbar disableGutters variant="dense">
         <Typography>{truck.truck.name} ({toDistance(truck.totalDistance)}, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
-        <IconButton onClick={() => store.toggleTruckLocked(solution, truck)} title={isLocked ? `The route of ${truck.truck.name} is locked - Click to unlock` : `Click to lock the route of truck ${truck.truck.name}`}>
-          {isLocked ? <Lock /> : <LockOpen />}
-        </IconButton>
+        <Tooltip title={isLocked ? `The route of ${truck.truck.name} is locked - Click to unlock` : `Click to lock the route of truck ${truck.truck.name}`}>
+          <IconButton onClick={() => store.toggleTruckLocked(solution, truck)}>
+            {isLocked ? <Lock /> : <LockOpen />}
+          </IconButton>
+        </Tooltip>
       </Toolbar>
       <div className={classes.route}>
-      <ContainerDimensions>{(args) => <MareyTruckRoute {...args} {...this.props} />}</ContainerDimensions>
+        <ContainerDimensions>{(args) => <MareyTruckRoute {...args} {...this.props} />}</ContainerDimensions>
       </div>
     </div>);
   }
@@ -398,8 +400,8 @@ class TimelineAxis extends React.Component<WithStyles<typeof styles> & IWithStor
     return <svg width={width} height={height}>
       <line x1={xscale.range()[0]} x2={xscale.range()[1]} />
       {xscale.ticks(8).map((t) => <g key={t.toString()} transform={`translate(${xscale(t)}, 0)`} >
-          <line y2={3} />
-          <text y={5} >{TIME_FORMAT(t)}</text>
+        <line y2={3} />
+        <text y={5} >{TIME_FORMAT(t)}</text>
       </g>)}
     </svg>;
   }
@@ -415,7 +417,7 @@ class MareyChart extends React.Component<IMareyChartProps> {
     return <div className={classes.root}>
       {solution.trucks.map((truck) => <MareyTruck key={truck.truck.id} truck={truck} classes={classes} solution={solution} />)}
       <div className={classNames(classes.timelineaxis)}>
-        <ContainerDimensions>{(args) => <TimelineAxis classes={classes} {...args}/>}</ContainerDimensions>
+        <ContainerDimensions>{(args) => <TimelineAxis classes={classes} {...args} />}</ContainerDimensions>
       </div>
     </div>;
   }
