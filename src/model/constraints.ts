@@ -29,6 +29,7 @@ export function checkGenericTruck(truck: ITruckRoute) {
   if (truck.usedCapacity > truck.truck.capacity) {
     violations.push(`Truck ${truck.truck.name} used a capacity of ${truck.usedCapacity}/${truck.truck.capacity}`);
   }
+  let prev: IServedCustomer | null = null;
   for (const served of truck.route) {
     const customer = served.customer;
     if (isDepot(customer)) {
@@ -40,6 +41,15 @@ export function checkGenericTruck(truck: ITruckRoute) {
     if (served.startOfService > customer.endTime) {
       violations.push(`Customer ${customer.name} served by ${truck.truck.name} after his/her end time`);
     }
+    if (!prev) {
+      prev = served;
+      continue;
+    }
+    if ((prev.departureTime + served.timeTo) > served.arrivalTime) {
+      violations.push(`Cannot arrive at customer ${customer.name} before departing from the previous customer ${prev.customer.name}`);
+    }
+
+    prev = served;
   }
   return violations;
 }

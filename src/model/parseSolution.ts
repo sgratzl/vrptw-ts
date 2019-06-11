@@ -93,7 +93,7 @@ function computeRouteWayPoints(truck: ITruckRoute) {
 
 export function optimizeLocally(problem: IProblem, truck: ITruckRoute, constraints: IConstraints) {
   if (truck.usedCapacity > truck.truck.capacity) {
-    return false; // cannot optimize
+    return Promise.resolve(null); // cannot optimize
   }
 
   const customers = truck.route.map((d) => d.customer).filter((d) => !isDepot(d));
@@ -153,7 +153,7 @@ export function optimizeLocally(problem: IProblem, truck: ITruckRoute, constrain
   });
 
   if (!best) {
-    return false;
+    return Promise.resolve(null);
   }
 
   // found a better solution

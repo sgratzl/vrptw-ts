@@ -198,7 +198,9 @@ export default class SolutionNode implements IConstraints, ISolution {
     route.route.splice(route.route.length - 1, 0, served);
     route.usedCapacity += customer.demand;
 
-    optimizeLocally(this.problem, route, this);
+    this.checkViolations();
+
+    Promise.resolve(optimizeLocally(this.problem, route, this)).then(() => this.checkViolations());
   }
 
   @computed

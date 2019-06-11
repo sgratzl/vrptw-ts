@@ -98,7 +98,9 @@ class Solution extends React.Component<ISolutionProps> {
         </Tooltip>
         <div className={classes.spacer} />
         {solution.valid ? null : <React.Fragment>
-          <Typography color="error" onClick={this.openViolationList}>{solution.violations.length} violation{solution.violations.length > 1 ? 's' : ''}</Typography>
+          <Tooltip title="Click to show details">
+            <Typography color="error" onClick={this.openViolationList}>{solution.violations.length} violation{solution.violations.length > 1 ? 's' : ''}</Typography>
+          </Tooltip>
           <Popover anchorEl={store.ui.visibleViolationAnchor}
             open={store.ui.visibleViolationAnchor != null && store.ui.visibleViolationSolution === solution}
             onClose={this.closeViolationList}
