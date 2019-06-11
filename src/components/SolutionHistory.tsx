@@ -12,7 +12,7 @@ import {bind, debounce} from 'decko';
 import {toDistance} from '../utils';
 import GalleryItem from './GalleryItem';
 
-const styles = (_theme: Theme) => createStyles({
+const styles = (theme: Theme) => createStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
@@ -75,7 +75,11 @@ const styles = (_theme: Theme) => createStyles({
     padding: '1rem',
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+
+    '& button': {
+      background: theme.palette.primary.light
+    }
   },
   link: {
     fill: 'none',
@@ -213,7 +217,7 @@ class SolutionHistory extends React.Component<ISolutionHistoryProps> {
         </Typography>
         <div className={classes.adder}>
           <Tooltip title="Compute New Solution">
-            <IconButton onClick={this.freshSolution} color="primary" >
+            <IconButton onClick={this.freshSolution}>
               <AddIcon />
             </IconButton>
           </Tooltip>
