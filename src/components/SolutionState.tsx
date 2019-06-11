@@ -40,7 +40,7 @@ class SolutionState extends React.Component<ISolutionStateProps> {
     switch(solution.state) {
       case ESolutionNodeState.INTERACTIVE:
         return <IconButton onClick={this.onSolve} title="Solve this solution with the current constraints">
-            <Badge badgeContent={solution.customConstraints} color="primary" title={`${solution.customConstraints} number of extra constraints`}>
+            <Badge badgeContent={solution.countCustomConstraints} color="primary" title={`${solution.countCustomConstraints} number of extra constraints`}>
               <Memory />
             </Badge>
           </IconButton>;
@@ -52,7 +52,7 @@ class SolutionState extends React.Component<ISolutionStateProps> {
         </IconButton>;
       case ESolutionNodeState.UNSATISFIABLE:
         return <IconButton disabled title="The solution cannot be solved with the given constraints">
-          <Badge badgeContent={solution.customConstraints} color="error" title={`${solution.customConstraints} number of extra constraints`}>
+          <Badge badgeContent={solution.countCustomConstraints} color="error" title={`${solution.countCustomConstraints} number of extra constraints`}>
             <Warning color="error"/>
           </Badge>
           </IconButton>;

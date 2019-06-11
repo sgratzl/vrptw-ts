@@ -1,7 +1,7 @@
 import {EStatus} from 'minizinc';
 import RESTMiniZinc from 'minizinc/build/RESTMiniZinc';
 import {action, computed, observable} from 'mobx';
-import {ICustomer, IProblem, IServerSolution, ITruck, ITruckRoute} from '../model/interfaces';
+import {ICustomer, IProblem, IServerSolution, ITruck, ITruckRoute, IOrderConstraint} from '../model/interfaces';
 import parseSolution from '../model/parseSolution';
 import problem from '../model/problem';
 import SolutionNode, {ESolutionNodeState} from '../model/SolutionNode';
@@ -163,6 +163,22 @@ export class ApplicationStore {
       solution = this.fork(solution);
     }
     solution.moveCustomer(truck, customer);
+  }
+
+  @action
+  createPartialOrder(solution: SolutionNode, from: ICustomer, to: ICustomer) {
+    if (solution.state !== ESolutionNodeState.INTERACTIVE) {
+      solution = this.fork(solution);
+    }
+    solution.createPartialOrder(from, to);
+  }
+
+  @action
+  removePartialOrder(solution: SolutionNode, order: IOrderConstraint) {
+    if (solution.state !== ESolutionNodeState.INTERACTIVE) {
+      solution = this.fork(solution);
+    }
+    solution.removePartialOrder(order);
   }
 
   isInGallery(solution: SolutionNode) {

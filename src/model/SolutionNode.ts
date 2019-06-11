@@ -149,6 +149,25 @@ export default class SolutionNode implements IConstraints, ISolution {
   }
 
   @action
+  createPartialOrder(from: ICustomer, to: ICustomer) {
+    if (this.partialOrderConstraints.find((d) => d.from === from && d.to === to)) {
+      return; // duplicate
+    }
+    this.partialOrderConstraints.push({from, to});
+
+    this.checkViolations();
+  }
+
+  @action
+  removePartialOrder(order: IOrderConstraint) {
+    const index = this.partialOrderConstraints.findIndex((d) => d.from === order.from && d.to === order.to);
+    if (index < 0) {
+      return;
+    }
+    this.partialOrderConstraints.splice(index, 1);
+  }
+
+  @action
   moveCustomer(truck: ITruck, customer: ICustomer) {
     if (isDepot(customer)) {
       return;
@@ -183,7 +202,7 @@ export default class SolutionNode implements IConstraints, ISolution {
   }
 
   @computed
-  get customConstraints() {
+  get countCustomConstraints() {
     return this.lockedCustomers.length + this.lockedTrucks.length + this.partialOrderConstraints.length;
   }
 

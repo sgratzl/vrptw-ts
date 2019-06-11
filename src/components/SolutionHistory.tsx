@@ -94,7 +94,6 @@ export interface ISolutionHistoryProps extends WithStyles<typeof styles>, IWithS
 @observer
 class HistoryBarChart extends React.Component<ISolutionHistoryProps & {width: number, height: number}> {
   private hoverSolutionBar(anchor: HTMLElement | null, solution: SolutionNode | null, related: EventTarget | null) {
-    console.log(anchor, related);
     if (related instanceof HTMLElement && related.style.zIndex === '-1' && related.style.position === 'fixed') {
       return; // looks like the backdrop
     }
