@@ -157,6 +157,14 @@ export class ApplicationStore {
     solution.toggleTruckLocked(truck);
   }
 
+  @action
+  moveCustomer(solution: SolutionNode, truck: ITruckRoute, customer: ICustomer) {
+    if (solution.state !== ESolutionNodeState.INTERACTIVE) {
+      solution = this.fork(solution);
+    }
+    solution.moveCustomer(truck, customer);
+  }
+
   isInGallery(solution: SolutionNode) {
     return this.gallerySolutions.includes(solution);
   }

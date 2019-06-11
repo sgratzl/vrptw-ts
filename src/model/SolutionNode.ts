@@ -1,4 +1,4 @@
-import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, ILockedTruckConstraint, IProblem, isDepot, ICustomer, ITruck, ITruckRoute} from './interfaces';
+import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, ILockedTruckConstraint, IProblem, isDepot, ICustomer, ITruck, ITruckRoute, IServedCustomer} from './interfaces';
 import {observable, computed, action} from 'mobx';
 import {problem2params} from './problem';
 import {MODEL, constraints2code, checkConstraints} from './constraints';
@@ -136,7 +136,6 @@ export default class SolutionNode implements IConstraints, ISolution {
       return;
     }
     const index = this.lockedCustomers.findIndex((d) => d.truck === truck && d.customer === customer);
-    // TODO need to fork?
     if (index >= 0) {
       this.lockedCustomers.splice(index, 1);
     } else {
@@ -153,7 +152,6 @@ export default class SolutionNode implements IConstraints, ISolution {
   @action
   toggleTruckLocked(truck: ITruckRoute) {
     const index = this.lockedTrucks.findIndex((d) => d.truck === truck.truck);
-    // TODO need to fork?
     if (index >= 0) {
       this.lockedTrucks.splice(index, 1);
     } else {
@@ -161,6 +159,39 @@ export default class SolutionNode implements IConstraints, ISolution {
     }
 
     this.checkViolations();
+  }
+
+  @action
+  moveCustomer(truck: ITruckRoute, customer: ICustomer) {
+    if (isDepot(customer)) {
+      return;
+    }
+    // remove old
+    const index = this.lockedCustomers.findIndex((d) => d.customer === customer);
+    if (index >= 0) {
+      this.lockedCustomers.splice(index, 1);
+    }
+
+    this.lockedCustomers.push({truck: truck.truck, customer});
+    // modify solution to move the customer to the right truck, even if it destroys everthing for now
+    let served: IServedCustomer | null = null;
+    for (const t of this.trucks) {
+      const index = t.route.findIndex((d) => d.customer === customer);
+      if (index < 0) {
+        continue;
+      }
+      served = t.route.splice(index, 1)[0];
+      t.usedCapacity -= customer.demand;
+      break;
+    }
+    if (!served) {
+      return;
+    }
+    // insert before depot
+    truck.route.splice(truck.route.length - 1, 0, served);
+    truck.usedCapacity += customer.demand;
+
+    // TODO locally resolve the route 
   }
 
   @computed

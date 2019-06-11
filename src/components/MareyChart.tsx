@@ -116,7 +116,7 @@ export interface IMareyChartProps extends WithStyles<typeof styles>, IWithStore 
   solution: SolutionNode;
 }
 
-interface IMareyTruckProps extends WithStyles<typeof styles>, IWithStore {
+interface IMareyTruckProps extends WithStyles<typeof styles>, IWithStore, IDropProps {
   solution: SolutionNode;
   truck: ITruckRoute;
 }
@@ -137,7 +137,7 @@ interface IDragProps {
   isDragging?: boolean;
 }
 
-interface IMareyTruckCustomerProps extends IMareyTruckProps, IDropProps, IDragProps {
+interface IMareyTruckCustomerProps extends IMareyTruckProps, IDragProps {
   i: number;
   route: IServedCustomer;
   xscale(v: number): number;
@@ -145,16 +145,33 @@ interface IMareyTruckCustomerProps extends IMareyTruckProps, IDropProps, IDragPr
 
 }
 
-const squareTarget: DropTargetSpec<IMareyTruckCustomerProps> = {
-  canDrop(_props) {
-      return true; //props.game.canMoveKnight(props.x, props.y);
+const squareTarget: DropTargetSpec<IMareyTruckProps> = {
+  canDrop(props, monitor) {
+    const item = monitor.getItem();
+    if (!item) {
+      return false;
+    }
+    const customer = item.customer;
+    if (customer == null) {
+      return false;
+    }
+    // check if the customer already served by this truck, if so no
+    return props.truck.route.find((d) => d.customer.id === customer) == null;
   },
-  drop(_props) {
-    //props.game.moveKnight(props.x, props.y);
+  drop(props, monitor) {
+    const item = monitor.getItem();
+    if (!item) {
+      return;
+    }
+    const customer = item.customer;
+    if (customer == null) {
+      return;
+    }
+    props.store!.moveCustomer(props.solution, props.truck, props.solution.problem.customers.find((d) => d.id === customer)!);
   }
 };
 
-const collect: DropTargetCollector<IDropProps, IMareyTruckCustomerProps> = (connect, monitor) => {
+const collect: DropTargetCollector<IDropProps, IMareyTruckProps> = (connect, monitor) => {
   return {
     connectDropTarget: connect.dropTarget(),
     isOver: monitor.isOver(),
@@ -162,9 +179,11 @@ const collect: DropTargetCollector<IDropProps, IMareyTruckCustomerProps> = (conn
   };
 };
 
-const knightSource: DragSourceSpec<IMareyTruckCustomerProps, {}> = {
-  beginDrag(_props) {
-    return {};
+const customerSource: DragSourceSpec<IMareyTruckCustomerProps, {customer: number}> = {
+  beginDrag(props) {
+    return {
+      customer: props.route.customer.id
+    };
   }
 };
 
@@ -175,9 +194,8 @@ const collectSource: DragSourceCollector<IDragProps, IMareyTruckCustomerProps> =
   };
 };
 
-@DropTarget('customer', squareTarget, collect)
-@DragSource('customer', knightSource, collectSource)
 @inject('store')
+@DragSource('customer', customerSource, collectSource)
 @observer
 class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
   render(): React.ReactNode {
@@ -266,14 +284,15 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
 }
 
 @inject('store')
+@DropTarget('customer', squareTarget, collect)
 @observer
 class MareyTruck extends React.Component<IMareyTruckProps> {
 
-  render() {
+  render(): React.ReactNode {
     const {truck, classes, solution} = this.props;
     const store = this.props.store!;
     const isLocked = solution.isTruckLocked(truck);
-    return <div className={classNames(classes.truck, {[classes.locked]: isLocked})} style={{flexGrow: truck.route.length}} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
+    return this.props.connectDropTarget!(<div className={classNames(classes.truck, {[classes.locked]: isLocked})} style={{flexGrow: truck.route.length}} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
       <Toolbar disableGutters variant="dense">
         <Typography>{truck.truck.name} ({toDistance(truck.totalDistance)}, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
         <IconButton onClick={() => store.toggleTruckLocked(solution, truck)} title={isLocked ? `The route of ${truck.truck.name} is locked - Click to unlock` : `Click to lock the route of truck ${truck.truck.name}`}>
@@ -283,7 +302,7 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
       <div className={classes.route}>
       <ContainerDimensions>{(args) => <MareyTruckRoute {...args} {...this.props} />}</ContainerDimensions>
       </div>
-    </div>;
+    </div>);
   }
 }
 
