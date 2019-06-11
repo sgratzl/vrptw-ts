@@ -4,7 +4,7 @@ import {IWithStore} from '../stores/interfaces';
 import {withStyles, createStyles, Theme, WithStyles} from '@material-ui/core/styles';
 import {ITruckRoute, isDepot, IServedCustomer} from '../model/interfaces';
 import {Typography, Badge, Tooltip, Toolbar, IconButton} from '@material-ui/core';
-import {scaleLinear, scaleBand, line, scaleTime, timeMinute} from 'd3';
+import {scaleLinear, scaleBand, line, scaleTime, timeMinute, timeFormat} from 'd3';
 import ContainerDimensions from 'react-container-dimensions';
 import classNames from 'classnames';
 import SolutionNode from '../model/SolutionNode';
@@ -109,7 +109,8 @@ const styles = (_theme: Theme) => createStyles({
   }
 });
 
-
+const BASE_DATE = new Date(2018, 1, 1, 8, 0, 0, 0);
+const TIME_FORMAT = timeFormat('%H:%M');
 
 export interface IMareyChartProps extends WithStyles<typeof styles>, IWithStore {
   solution: SolutionNode;
@@ -208,6 +209,8 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
     //   },
     // });
 
+    const dateString = (v: number) => TIME_FORMAT(timeMinute.offset(BASE_DATE, v));
+
     return this.props.connectDragSource!(<div
       className={classNames(classes.customer, {[classes.selectedC]: store.hoveredTruck === truck.truck && store.hoveredSolution === solution && store.hoveredCustomer == route.customer})}
       onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
@@ -218,8 +221,12 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
         </Badge>
       </Tooltip>
       <div className={classes.timeline}></div>
-      <div className={classes.window} style={{transform: `translate(${windowStart}px,0)`, width: `${windowEnd - windowStart}px`}} />
-      <div className={classes.service} style={{transform: `translate(${serviceStart}px,0)`, width: `${serviceEnd - serviceStart}px`, background: truck.truck.color}}/>
+      <Tooltip title={`Service Window: ${dateString(route.customer.startTime)} - ${dateString(route.customer.endTime)}`}>
+        <div className={classes.window} style={{transform: `translate(${windowStart}px,0)`, width: `${windowEnd - windowStart}px`}} />
+      </Tooltip>
+      <Tooltip title={`Service Time: ${dateString(route.startOfService)} - ${dateString(route.endOfService)}`}>
+        <div className={classes.service} style={{transform: `translate(${serviceStart}px,0)`, width: `${serviceEnd - serviceStart}px`, background: truck.truck.color}}/>
+      </Tooltip>
     </div>);
   }
 }
@@ -238,7 +245,7 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
       const points: [number, number][] = [];
       truck.route.forEach((route, i) => {
 
-        const y = center + yscale(i.toString())!;
+        const y = center + yscale(i.toString())! + 3; // HACK SHIFT
         if (i > 0) {
           points.push([route.arrivalTime, y]);
         }
@@ -287,15 +294,13 @@ class TimelineAxis extends React.Component<WithStyles<typeof styles> & IWithStor
   render() {
     const {width, height} = this.props;
     const store = this.props.store!;
-    const base = new Date(2018, 1, 1, 8, 0, 0, 0);
-    const xscale = scaleTime().domain([base, timeMinute.offset(base, store.maxFinishTime)]).range([25, width - 5]).clamp(true);
-    const format = xscale.tickFormat(8);
+    const xscale = scaleTime().domain([BASE_DATE, timeMinute.offset(BASE_DATE, store.maxFinishTime)]).range([25, width - 5]).clamp(true);
 
     return <svg width={width} height={height}>
       <line x1={xscale.range()[0]} x2={xscale.range()[1]} />
       {xscale.ticks(8).map((t) => <g key={t.toString()} transform={`translate(${xscale(t)}, 0)`} >
           <line y2={3} />
-          <text y={5} >{format(t)}</text>
+          <text y={5} >{TIME_FORMAT(t)}</text>
       </g>)}
     </svg>;
   }
