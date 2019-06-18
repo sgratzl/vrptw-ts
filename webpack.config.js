@@ -128,6 +128,15 @@ module.exports = (_env, options) => {
       {
         test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
         loader: 'file-loader'
+      },
+      {
+        test: /\.(data|wasm|mem)$/,
+        type: 'javascript/auto',
+        loader: 'file-loader'
+      },
+      {
+        test: /\.(mjs)$/,
+        type: 'javascript/auto'
       }
       ]
     },
@@ -135,15 +144,7 @@ module.exports = (_env, options) => {
       ignored: /node_modules(?!(\/|\\)minizinc.*)/,
     },
     devServer: {
-      hot: false,
-      proxy: {
-        '/v1.0/*': {
-          target: 'http://localhost:5000',
-          secure: false,
-          ws: true
-        },
-
-      }
+      hot: false
     }
   };
 };

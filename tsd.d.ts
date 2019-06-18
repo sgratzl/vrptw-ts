@@ -21,3 +21,10 @@ declare module 'url-loader!*';
 //allow html dependencies
 declare module 'imports-loader!*';
 
+
+declare module 'worker-loader*' {
+  class WorkerFactory extends Worker {
+    constructor();
+  }
+  export default WorkerFactory;
+}

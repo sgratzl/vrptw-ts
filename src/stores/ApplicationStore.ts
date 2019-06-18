@@ -1,5 +1,5 @@
 import {EStatus} from 'minizinc';
-import RESTMiniZinc from 'minizinc/build/RESTMiniZinc';
+import createMiniZinc from '../server/mzn';
 import {action, computed, observable} from 'mobx';
 import {ICustomer, IProblem, IServerSolution, ITruck, ITruckRoute, IOrderConstraint} from '../model/interfaces';
 import parseSolution from '../model/parseSolution';
@@ -18,7 +18,7 @@ export interface IUIFlags {
 
 export class ApplicationStore {
 
-  private readonly backend = new RESTMiniZinc();
+  private readonly backend = createMiniZinc();
   private solutionCounter = 0;
 
   @observable
