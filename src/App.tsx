@@ -6,8 +6,6 @@ import {AppBar, CssBaseline, Toolbar, Typography} from '@material-ui/core';
 import Solution from './components/Solution';
 import Gallery from './components/Gallery';
 import SolutionHistory from './components/SolutionHistory';
-import {DragDropContext} from 'react-dnd';
-import HTML5Backend from 'react-dnd-html5-backend';
 
 const styles = (_theme: Theme) => createStyles({
   root: {
@@ -48,8 +46,6 @@ export interface IAppProps extends WithStyles<typeof styles>, IWithStore {
 
 }
 
-
-@DragDropContext(HTML5Backend)
 @inject('store')
 @observer
 class App extends React.Component<IAppProps> {
@@ -66,12 +62,12 @@ class App extends React.Component<IAppProps> {
           </Typography>
         </Toolbar>
       </AppBar>
-        <main className={classes.main}>
-          {store.leftSelectedSolution && <Solution solution={store.leftSelectedSolution} orientation="left" className={classes.left}/> }
-          {store.rightSelectedSolution && <Solution solution={store.rightSelectedSolution} orientation="right" className={classes.right} />}
-          <SolutionHistory className={classes.history} />
-          <Gallery className={classes.gallery}/>
-        </main>
+      <main className={classes.main}>
+        {store.leftSelectedSolution && <Solution solution={store.leftSelectedSolution} orientation="left" className={classes.left}/> }
+        {store.rightSelectedSolution && <Solution solution={store.rightSelectedSolution} orientation="right" className={classes.right} />}
+        <SolutionHistory className={classes.history} />
+        <Gallery className={classes.gallery}/>
+      </main>
     </div>;
   }
 }

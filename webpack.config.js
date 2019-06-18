@@ -22,7 +22,11 @@ module.exports = (_env, options) => {
   const dev = options.mode.startsWith('d');
   return {
     node: {
-      global: true
+      global: true,
+      fs: 'empty',
+      crypto: 'empty',
+      Buffer: false,
+      setImmediate: false
     }, // no polyfills
     entry: {
       app: './src/index.tsx',
