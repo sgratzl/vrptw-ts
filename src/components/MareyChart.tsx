@@ -23,6 +23,9 @@ const styles = (_theme: Theme) => createStyles({
     display: 'flex',
     flexDirection: 'column',
     flex: '1 1 0',
+    '&:nth-of-type(n + 2)': {
+      paddingTop: '1rem'
+    }
   },
   locked: {
     // TODO,
@@ -129,6 +132,10 @@ const styles = (_theme: Theme) => createStyles({
       strokeOpacity: 1,
       strokeWidth: 10
     }
+  },
+
+  dense: {
+    padding: 2
   }
 });
 
@@ -376,8 +383,8 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
       <Toolbar disableGutters variant="dense">
         <Typography>{truck.truck.name} ({toDistance(truck.totalDistance)}, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
         <Tooltip title={isLocked ? `The route of ${truck.truck.name} is locked - Click to unlock` : `Click to lock the route of truck ${truck.truck.name}`}>
-          <IconButton onClick={() => store.toggleTruckLocked(solution, truck)}>
-            {isLocked ? <Lock /> : <LockOpen />}
+          <IconButton onClick={() => store.toggleTruckLocked(solution, truck)} className={classes.dense}>
+            {isLocked ? <Lock/> : <LockOpen />}
           </IconButton>
         </Tooltip>
       </Toolbar>
