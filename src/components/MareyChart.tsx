@@ -277,7 +277,7 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
       </div>;
     }
     const windowStart = xscale(route.customer.startTime);
-    const windowEnd = xscale(route.customer.endTime);
+    const windowEnd = xscale(route.customer.endTime + route.customer.serviceTime);
     const serviceStart = xscale(route.startOfService);
     const serviceEnd = xscale(route.endOfService);
 
