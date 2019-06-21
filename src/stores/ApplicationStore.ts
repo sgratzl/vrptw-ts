@@ -1,10 +1,11 @@
 import {EStatus} from 'minizinc';
 import createMiniZinc from '../server/mzn';
 import {action, computed, observable} from 'mobx';
-import {ICustomer, IProblem, IServerSolution, ITruck, ITruckRoute, IOrderConstraint} from '../model/interfaces';
+import {ICustomer, IProblem, IServerSolution, ITruck, ITruckRoute, IOrderConstraint, ISolution} from '../model/interfaces';
 import parseSolution from '../model/parseSolution';
 import problem from '../model/problem';
 import SolutionNode, {ESolutionNodeState} from '../model/SolutionNode';
+import {initialResult} from '../model/initial';
 
 export interface IUIFlags {
   // for showing the violations popup
@@ -54,7 +55,7 @@ export class ApplicationStore {
   hoveredCustomer: ICustomer | null = null;
 
   constructor() {
-    this.solveFresh();
+    this.solveInitial();
   }
 
   @action
@@ -111,6 +112,24 @@ export class ApplicationStore {
       this.gallerySolutions.push(node);
     }
     return this.solve(node);
+  }
+
+  private solveInitial() {
+    const node = new SolutionNode(this.solutionCounter++, this.rootProblem);
+    this.solutions.push(node);
+    if (!this.leftSelectedSolution) {
+      this.leftSelectedSolution = node;
+    }
+    if (this.gallerySolutions.length === 0) {
+      this.gallerySolutions.push(node);
+    }
+    this.solving = true;
+    node.state = ESolutionNodeState.SATISFIED;
+    Promise.all(initialResult.solutions.map((s: {assignments: IServerSolution}) => parseSolution(node.problem, s.assignments))).then((sols) => {
+      for (const s of sols) {
+        node.pushSolution(<ISolution>s);
+      }
+    });
   }
 
   @computed
