@@ -14,7 +14,7 @@ import Lock from '@material-ui/icons/Lock';
 import LockOpen from '@material-ui/icons/LockOpen';
 import {ConnectDropTarget, DropTarget, DropTargetCollector, DropTargetSpec, ConnectDragSource, DragSourceSpec, DragSourceCollector, DragSource} from 'react-dnd';
 
-const styles = (_theme: Theme) => createStyles({
+const styles = (theme: Theme) => createStyles({
   root: {
     display: 'flex',
     flexDirection: 'column',
@@ -116,7 +116,12 @@ const styles = (_theme: Theme) => createStyles({
       height: 3
     }
   },
-
+  violatedC: {
+    color: theme.palette.error.main,
+    '& > $timeline': {
+      background: theme.palette.error.main
+    }
+  },
   timelineaxis: {
     height: 20,
 
@@ -310,6 +315,7 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
     const serviceEnd = xscale(route.endOfService);
 
     const isLocked = solution.isCustomerLocked(truck.truck, route.customer);
+    const isViolated = route.startOfService < route.customer.startTime || route.startOfService > route.customer.endTime;
 
     const dateString = (v: number) => TIME_FORMAT(timeMinute.offset(BASE_DATE, v));
 
@@ -317,7 +323,7 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
       Drag and drop on another customer in the same truck to create partial order constraint</p>;
 
     return this.props.connectDropTarget!(this.props.connectDragSource!(<div
-      className={classNames(classes.customer, {[classes.selectedC]: store.hoveredCustomer === route.customer || (this.props.canDrop && this.props.isOver)})}
+      className={classNames(classes.customer, {[classes.selectedC]: store.hoveredCustomer === route.customer || (this.props.canDrop && this.props.isOver), [classes.violatedC]: isViolated})}
       onMouseOver={() => store.hoveredCustomer = route.customer} onMouseOut={() => store.hoveredCustomer = null}
       style={{transform: `translate(0, ${yscale(i.toString())}px)`}}>
       <Tooltip title={hint(isLocked ? `Customer ${route.customer.name} has to be served by ${truck.truck.name} - Click to unlock` : `Click to force customer ${route.customer.name} to be served by ${truck.truck.name}`)} placement="top">

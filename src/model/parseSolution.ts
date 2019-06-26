@@ -161,8 +161,39 @@ export function optimizeLocally(problem: IProblem, truck: ITruckRoute, constrain
   Object.assign(truck, best);
   Object.assign(truck, {
     startTime: truck.route[0].arrivalTime,
-    totalTime: truck.route[truck.route.length - 1].departureTime
+    finishTime: truck.route[truck.route.length - 1].departureTime
   });
+
+  return computeRouteWayPoints(truck);
+}
+
+/**
+ * apply the current customer order even it creates violations
+ */
+export function rerouteTruck(problem: IProblem, truck: ITruckRoute) {
+  const route = truck.route;
+  for (let i = 0; i < route.length; i++) {
+    const current = route[i];
+
+    if (i === 0) {
+      current.departureTime = 0;
+      continue;
+    }
+    const prev = route[i - 1];
+    const c = current.customer;
+
+    current.distanceTo = problem.distances[prev.customer.id - 1]![current.customer.id - 1]!;
+    current.timeTo = problem.travelTimes[prev.customer.id - 1]![current.customer.id - 1]!;
+    current.arrivalTime = prev.departureTime + current.timeTo;
+    current.startOfService = Math.max(current.arrivalTime, c.startTime);
+    current.endOfService = current.startOfService + c.serviceTime;
+    current.departureTime = current.startOfService + c.serviceTime;
+  }
+
+  // inject the new route into the truck
+  truck.totalDistance = route.reduce((acc, a) => acc + a.distanceTo, 0);
+  truck.startTime = truck.route[0].arrivalTime;
+  truck.finishTime = truck.route[truck.route.length - 1].departureTime;
 
   return computeRouteWayPoints(truck);
 }

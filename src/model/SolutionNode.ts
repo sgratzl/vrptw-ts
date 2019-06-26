@@ -2,6 +2,7 @@ import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, IL
 import {observable, computed, action} from 'mobx';
 import {problem2params} from './problem';
 import {MODEL, constraints2code, checkConstraints, checkGenericConstraints} from './constraints';
+import {rerouteTruck} from './parseSolution';
 
 export enum ESolutionNodeState {
   INTERACTIVE = 'interactive',
@@ -199,6 +200,9 @@ export default class SolutionNode implements IConstraints, ISolution {
       nextRoute.usedCapacity += customer.demand;
       break;
     }
+    if (!nextRoute) {
+      return;
+    }
 
     if (currentRoute !== nextRoute) {
       // remove old constraint and create a new one if the truck changes
@@ -208,10 +212,17 @@ export default class SolutionNode implements IConstraints, ISolution {
       }
       this.lockedCustomers.push({truck: nextRoute!.truck, customer});
     }
-
     this.checkViolations();
 
-    // Promise.resolve(optimizeLocally(this.problem, nextRoute, this)).then(() => this.checkViolations());
+    if (currentRoute === nextRoute) {
+      // optimize only the same
+      return Promise.resolve(rerouteTruck(this.problem, nextRoute)).then(() => this.checkViolations());
+    }
+    // optimize both
+    return Promise.all([
+      rerouteTruck(this.problem, currentRoute),
+      rerouteTruck(this.problem, nextRoute)
+    ]).then(() => this.checkViolations());
   }
 
   @computed
