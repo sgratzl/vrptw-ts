@@ -25,6 +25,8 @@ import GecodeWorker from 'worker-loader?name=gecode.worker.js!gecode-js/worker';
 export default function createMiniZinc() {
   return new WebWorkerMiniZinc({
     mzn: () => <IMiniZincWorkerClient>MZN.createWorkerClient(new MiniZincWorker()),
-    gecode: () => <IFznGecodeWorkerClient>GECODE.createWorkerClient(new GecodeWorker()),
+    solvers: [
+      () => <IFznGecodeWorkerClient>GECODE.createWorkerClient(new GecodeWorker())
+    ]
   });
 }
