@@ -1,7 +1,7 @@
 import {EStatus} from 'minizinc';
 import createMiniZinc from '../server/mzn';
 import {action, computed, observable} from 'mobx';
-import {ICustomer, IProblem, IServerSolution, ITruck, ITruckRoute, IOrderConstraint, ISolution} from '../model/interfaces';
+import {ICustomer, IProblem, IServerSolution, ITruck, ITruckRoute, IOrderConstraint} from '../model/interfaces';
 import parseSolution from '../model/parseSolution';
 import problem from '../model/problem';
 import SolutionNode, {ESolutionNodeState} from '../model/SolutionNode';
@@ -62,42 +62,24 @@ export class ApplicationStore {
   solve(node: SolutionNode) {
     this.solving = true;
     node.state = ESolutionNodeState.SOLVING;
-    this.backend.solve({
-      model: node.model,
-      all_solutions: true
-    }, node.params, {
-        onPartialResult: (type, result) => {
-          if (type !== 'solution') {
-            return;
-          }
-          // save solution state
-          const best = (<IServerSolution><unknown>result.solutions[result.solutions.length - 1].assignments);
-          parseSolution(node.problem, best).then((s) => {
-            node.pushSolution(s);
-          });
-        }
-      }).then((result) => {
-        if (result.status === EStatus.OPTIMAL_SOLUTION || result.status === EStatus.ALL_SOLUTIONS || result.status === EStatus.SATISFIED) {
-          node.state = ESolutionNodeState.SATISFIED;
-        } else {
-          node.state = ESolutionNodeState.UNSATISFIABLE;
-        }
-        if (result.solutions.length <= 0) {
-          return;
-        }
-        const best = (<IServerSolution><unknown>result.solutions[result.solutions.length - 1].assignments);
-        if (node.solution.distance === best.objective) {
-          return;
-        }
-        // has changed or no intermediate solutions
-        return parseSolution(node.problem, best).then((s) => {
-          node.pushSolution(s);
-        });
-      }).catch((error) => {
-        console.warn('error while computing solutions', error);
+    this.backend.solve(node.model, node.params).then((result) => {
+      if (result.status === EStatus.OPTIMAL_SOLUTION || result.status === EStatus.ALL_SOLUTIONS || result.status === EStatus.SATISFIED) {
+        node.state = ESolutionNodeState.SATISFIED;
+      } else {
         node.state = ESolutionNodeState.UNSATISFIABLE;
-      }).finally(() => {
-        this.solving = false;
+      }
+      if (result.solutions.length <= 0) {
+        return;
+      }
+      const best = (<IServerSolution><unknown>result.solutions[result.solutions.length - 1].assignments);
+      return parseSolution(node.problem, best).then((s) => {
+        node.setSolution(s);
+      });
+    }).catch((error) => {
+      console.warn('error while computing solutions', error);
+      node.state = ESolutionNodeState.UNSATISFIABLE;
+    }).finally(() => {
+      this.solving = false;
     });
   }
 
@@ -125,10 +107,9 @@ export class ApplicationStore {
     }
     this.solving = true;
     node.state = ESolutionNodeState.SATISFIED;
-    Promise.all(initialResult.solutions.map((s: {assignments: IServerSolution}) => parseSolution(node.problem, s.assignments))).then((sols) => {
-      for (const s of sols) {
-        node.pushSolution(<ISolution>s);
-      }
+    const best: IServerSolution = initialResult.solutions[initialResult.solutions.length - 1].assignments;
+    parseSolution(node.problem, best).then((s) => {
+      node.setSolution(s);
     });
   }
 

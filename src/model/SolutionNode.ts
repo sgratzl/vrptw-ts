@@ -29,7 +29,6 @@ export default class SolutionNode implements IConstraints, ISolution {
     finishTime: NaN,
     trucks: []
   };
-  partialResultDistances: number[] = [];
 
   @observable
   partialOrderConstraints: IOrderConstraint[] = [];
@@ -72,10 +71,9 @@ export default class SolutionNode implements IConstraints, ISolution {
   }
 
   @action
-  pushSolution(solution: ISolution) {
+  setSolution(solution: ISolution) {
     // best one so far
     this.solution = solution;
-    this.partialResultDistances.push(solution.distance);
 
     this.checkViolations();
   }
