@@ -161,11 +161,11 @@ export class ApplicationStore {
   }
 
   @action
-  moveCustomer(solution: SolutionNode, truck: ITruck, customer: ICustomer) {
+  moveCustomerBefore(solution: SolutionNode, customer: ICustomer, before: ICustomer) {
     if (solution.state !== ESolutionNodeState.INTERACTIVE) {
       solution = this.fork(solution);
     }
-    solution.moveCustomer(truck, customer);
+    solution.moveCustomerBefore(customer, before);
   }
 
   @action

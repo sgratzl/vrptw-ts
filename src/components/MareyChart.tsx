@@ -47,6 +47,28 @@ const styles = (_theme: Theme) => createStyles({
     width: '100%',
     alignItems: 'center'
   },
+  moveCustomerDrop: {
+    position: 'absolute',
+    width: '100%',
+    height: 3,
+    zIndex: 10,
+    top: 0,
+    background: 'transparent',
+    transition: 'all 0.25s ease'
+  },
+  moveCustomerDropOver: {
+    height: 8,
+    top: -3,
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      top: '50%',
+      width: '100%',
+      transform: 'translate(0, -1px)',
+      background: 'black',
+      height: 2
+    }
+  },
   truckRoute: {
     pointerEvents: 'none',
     position: 'absolute'
@@ -136,7 +158,7 @@ const styles = (_theme: Theme) => createStyles({
 
   dense: {
     padding: 2
-  }
+  },
 });
 
 const BASE_DATE = new Date(2018, 1, 1, 8, 0, 0, 0);
@@ -159,7 +181,7 @@ interface IDragProps {
 }
 
 
-interface IMareyTruckProps extends WithStyles<typeof styles>, IWithStore, IDropProps {
+interface IMareyTruckProps extends WithStyles<typeof styles>, IWithStore {
   solution: SolutionNode;
   truck: ITruckRoute;
 }
@@ -169,15 +191,20 @@ interface IMareyTruckRouteProps extends IMareyTruckProps {
   height: number;
 }
 
-interface IMareyTruckCustomerProps extends IMareyTruckProps, IDragProps {
+interface IMareyTruckCustomerProps extends IMareyTruckProps, IDragProps, IDropProps {
   i: number;
-  route: IServedCustomer;
+  served: IServedCustomer;
   xscale(v: number): number;
   yscale(v: string): number | undefined;
-
 }
 
-const moveCustomerSpec: DropTargetSpec<IMareyTruckProps> = {
+interface IMareyMoveCustomerProps extends IMareyTruckProps, IDropProps {
+  i: number;
+  served: IServedCustomer;
+  yscale(v: string): number | undefined;
+}
+
+const moveCustomerSpec: DropTargetSpec<IMareyMoveCustomerProps> = {
   canDrop(props, monitor) {
     const item = monitor.getItem();
     if (!item) {
@@ -187,8 +214,8 @@ const moveCustomerSpec: DropTargetSpec<IMareyTruckProps> = {
     if (customer == null) {
       return false;
     }
-    // check if the customer already served by this truck, if so no
-    return props.truck.route.find((d) => d.customer.id === customer) == null;
+    // don't drop before itself
+    return props.served.customer.id !== customer;
   },
   drop(props, monitor) {
     const item = monitor.getItem();
@@ -199,12 +226,13 @@ const moveCustomerSpec: DropTargetSpec<IMareyTruckProps> = {
     if (customer == null) {
       return;
     }
-    props.store!.moveCustomer(props.solution, props.truck.truck, props.solution.problem.customers.find((d) => d.id === customer)!);
+    const customerObj = props.solution.problem.customers.find((d) => d.id === customer)!;
+    props.store!.moveCustomerBefore(props.solution, customerObj, props.served.customer);
   }
 };
 
 
-const moveCustomerOrderSpec: DropTargetSpec<IMareyTruckCustomerProps> = {
+const partialOrderCustomerSpec: DropTargetSpec<IMareyTruckCustomerProps> = {
   canDrop(props, monitor) {
     const item = monitor.getItem();
     if (!item) {
@@ -216,7 +244,7 @@ const moveCustomerOrderSpec: DropTargetSpec<IMareyTruckCustomerProps> = {
     }
     const truck = item.truck;
     // same truck different customer
-    return props.truck.truck.id === truck && props.route.customer.id !== customer && !isDepot(props.route.customer);
+    return props.truck.truck.id === truck && props.served.customer.id !== customer && !isDepot(props.served.customer);
   },
   drop(props, monitor) {
     const item = monitor.getItem();
@@ -227,7 +255,7 @@ const moveCustomerOrderSpec: DropTargetSpec<IMareyTruckCustomerProps> = {
     if (customer == null) {
       return;
     }
-    props.store!.createPartialOrder(props.solution, props.solution.problem.customers.find((d) => d.id === customer)!, props.route.customer);
+    props.store!.createPartialOrder(props.solution, props.solution.problem.customers.find((d) => d.id === customer)!, props.served.customer);
   }
 };
 
@@ -241,11 +269,11 @@ const moveCustomerCollect: DropTargetCollector<IDropProps, IMareyTruckProps> = (
 
 const moveCustomerSource: DragSourceSpec<IMareyTruckCustomerProps, {customer: number, truck: number}> = {
   canDrag(props) {
-    return !isDepot(props.route.customer);
+    return !isDepot(props.served.customer);
   },
   beginDrag(props) {
     return {
-      customer: props.route.customer.id,
+      customer: props.served.customer.id,
       truck: props.truck.truck.id
     };
   }
@@ -259,12 +287,12 @@ const moveCustomerCollectSource: DragSourceCollector<IDragProps, IMareyTruckCust
 };
 
 @inject('store')
-@DropTarget('customer', moveCustomerOrderSpec, moveCustomerCollect)
+@DropTarget('customer', partialOrderCustomerSpec, moveCustomerCollect)
 @DragSource('customer', moveCustomerSource, moveCustomerCollectSource)
 @observer
 class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
   render(): React.ReactNode {
-    const {route, truck, classes, xscale, yscale, solution, i} = this.props;
+    const {served: route, truck, classes, xscale, yscale, solution, i} = this.props;
     const store = this.props.store!;
 
     if (isDepot(route.customer)) {
@@ -285,7 +313,7 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
 
     const dateString = (v: number) => TIME_FORMAT(timeMinute.offset(BASE_DATE, v));
 
-    const hint = (base: string) => <p>{base}<br />Drag and drop on another truck to assign to different truck<br />
+    const hint = (base: string) => <p>{base}<br />Drag and drop between two customers to reorder (also between trucks)<br />
       Drag and drop on another customer in the same truck to create partial order constraint</p>;
 
     return this.props.connectDropTarget!(this.props.connectDragSource!(<div
@@ -305,6 +333,21 @@ class MareyServedCustomer extends React.Component<IMareyTruckCustomerProps> {
         <div className={classes.service} style={{transform: `translate(${serviceStart}px,0)`, width: `${serviceEnd - serviceStart}px`, background: truck.truck.color}} />
       </Tooltip>
     </div>));
+  }
+}
+
+
+@inject('store')
+@DropTarget('customer', moveCustomerSpec, moveCustomerCollect)
+@observer
+class MareyMoveCustomer extends React.Component<IMareyMoveCustomerProps> {
+  render(): React.ReactNode {
+    const {classes, yscale, i} = this.props;
+
+    return this.props.connectDropTarget!(<div
+      className={classNames(classes.moveCustomerDrop, {[classes.moveCustomerDropOver]: (this.props.canDrop && this.props.isOver)})}
+      style={{transform: `translate(0, ${yscale(i.toString())!}px)`}}>
+    </div>);
   }
 }
 
@@ -343,7 +386,16 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
     };
 
     return <React.Fragment>
-      {truck.route.map((route, i) => <MareyServedCustomer key={i === 0 ? -1 : route.customer.id} i={i} route={route} xscale={xscale} yscale={yscale} {...this.props} />)}
+      {truck.route.map((served, i) => {
+        const customer = <MareyServedCustomer key={i === 0 ? -1 : served.customer.id} i={i} served={served} xscale={xscale} yscale={yscale} {...this.props} />;
+        if (i === 0) {
+          return customer;
+        }
+        return [
+          customer,
+          <MareyMoveCustomer key={`b${served.customer.id}`} i={i} served={served} yscale={yscale} {...this.props} />
+        ];
+      })}
       <svg width={width} height={height} className={classes.truckRoute}>
         <path d={genPath()!} className={classNames(classes.effective, {[classes.selected]: store.hoveredTruck === truck.truck && store.hoveredCustomer == null})} style={{stroke: truck.truck.color}} />
         <g>
@@ -371,7 +423,6 @@ class MareyTruckRoute extends React.Component<IMareyTruckRouteProps> {
 }
 
 @inject('store')
-@DropTarget('customer', moveCustomerSpec, moveCustomerCollect)
 @observer
 class MareyTruck extends React.Component<IMareyTruckProps> {
 
@@ -379,7 +430,7 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
     const {truck, classes, solution} = this.props;
     const store = this.props.store!;
     const isLocked = solution.isTruckLocked(truck);
-    return this.props.connectDropTarget!(<div className={classNames(classes.truck, {[classes.locked]: isLocked, [classes.moveTarget]: this.props.canDrop && this.props.isOver})} style={{flexGrow: truck.route.length}} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
+    return <div className={classNames(classes.truck, {[classes.locked]: isLocked})} style={{flexGrow: truck.route.length}} onMouseEnter={() => store.hoveredTruck = truck.truck} onMouseLeave={() => store.hoveredTruck = null}>
       <Toolbar disableGutters variant="dense">
         <Typography>{truck.truck.name} ({toDistance(truck.totalDistance)}, {truck.usedCapacity}/{truck.truck.capacity})</Typography>
         <Tooltip title={isLocked ? `The route of ${truck.truck.name} is locked - Click to unlock` : `Click to lock the route of truck ${truck.truck.name}`}>
@@ -391,7 +442,7 @@ class MareyTruck extends React.Component<IMareyTruckProps> {
       <div className={classes.route}>
         <ContainerDimensions>{(args) => <MareyTruckRoute {...args} {...this.props} />}</ContainerDimensions>
       </div>
-    </div>);
+    </div>;
   }
 }
 

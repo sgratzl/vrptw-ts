@@ -2,7 +2,6 @@ import {IConstraints, IOrderConstraint, ILockedCustomerConstraint, ISolution, IL
 import {observable, computed, action} from 'mobx';
 import {problem2params} from './problem';
 import {MODEL, constraints2code, checkConstraints, checkGenericConstraints} from './constraints';
-import {optimizeLocally} from './parseSolution';
 
 export enum ESolutionNodeState {
   INTERACTIVE = 'interactive',
@@ -166,39 +165,53 @@ export default class SolutionNode implements IConstraints, ISolution {
   }
 
   @action
-  moveCustomer(truck: ITruck, customer: ICustomer) {
-    if (isDepot(customer)) {
+  moveCustomerBefore(customer: ICustomer, before: ICustomer) {
+    if (isDepot(customer) || isDepot(before) || customer === before) {
       return;
     }
-    // remove old
-    const index = this.lockedCustomers.findIndex((d) => d.customer === customer);
-    if (index >= 0) {
-      this.lockedCustomers.splice(index, 1);
-    }
 
-    this.lockedCustomers.push({truck, customer});
     // modify solution to move the customer to the right truck, even if it destroys everthing for now
     let served: IServedCustomer | null = null;
+    let currentRoute: ITruckRoute | null = null;
     for (const t of this.trucks) {
       const index = t.route.findIndex((d) => d.customer === customer);
       if (index < 0) {
         continue;
       }
+      currentRoute = t;
       served = t.route.splice(index, 1)[0];
       t.usedCapacity -= customer.demand;
       break;
     }
-    if (!served) {
+    if (!served || !currentRoute) {
       return;
     }
-    // insert before depot
-    const route = this.trucks.find((d) => d.truck === truck)!;
-    route.route.splice(route.route.length - 1, 0, served);
-    route.usedCapacity += customer.demand;
+
+    let nextRoute: ITruckRoute | null = null;
+    for (const t of this.trucks) {
+      const index = t.route.findIndex((d) => d.customer === before);
+      if (index < 0) {
+        continue;
+      }
+      nextRoute = t;
+      // inject
+      nextRoute.route.splice(index, 0, served);
+      nextRoute.usedCapacity += customer.demand;
+      break;
+    }
+
+    if (currentRoute !== nextRoute) {
+      // remove old constraint and create a new one if the truck changes
+      const index = this.lockedCustomers.findIndex((d) => d.customer === customer);
+      if (index >= 0) {
+        this.lockedCustomers.splice(index, 1);
+      }
+      this.lockedCustomers.push({truck: nextRoute!.truck, customer});
+    }
 
     this.checkViolations();
 
-    Promise.resolve(optimizeLocally(this.problem, route, this)).then(() => this.checkViolations());
+    // Promise.resolve(optimizeLocally(this.problem, nextRoute, this)).then(() => this.checkViolations());
   }
 
   @computed
