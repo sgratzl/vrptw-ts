@@ -41,7 +41,6 @@ const styles = (_theme: Theme) => createStyles({
 });
 
 
-
 export interface IAppProps extends WithStyles<typeof styles>, IWithStore {
 
 }
