@@ -105,7 +105,7 @@
     "decko": "^1.2.0",
     "js-combinatorics": "^0.5.4",
     "leaflet": "^1.5.1",
-    "minizinc": "^3.0.1",
+    "minizinc": "^3.0.2",
     "mobx": "^5.10.1",
     "mobx-react": "^6.1.1",
     "react": "^16.8.6",
