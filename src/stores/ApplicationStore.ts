@@ -1,5 +1,5 @@
 import {EStatus} from 'minizinc';
-import createMiniZinc from '../server/mzn';
+import createMiniZinc from 'minizinc/build/internal/workerloader';
 import {action, computed, observable} from 'mobx';
 import {ICustomer, IProblem, IServerSolution, ITruck, ITruckRoute, IOrderConstraint} from '../model/interfaces';
 import parseSolution from '../model/parseSolution';
